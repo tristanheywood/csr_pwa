@@ -70,7 +70,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-        img = open('./data/sample.png', 'rb').read()
+        try:
+          img = open('./data/sample.png', 'rb').read()
+        except:
+          print('sample.png not found, initialising empty Image')
+          img = np.zeros((10, 10, 3))
         img64 = base64.b64encode(img).decode('ascii')
         # import pdb; pdb.set_trace()
 

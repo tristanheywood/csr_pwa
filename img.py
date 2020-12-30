@@ -18,7 +18,11 @@ class Image:
 
     def __init__(self, data = None, fname=None):
         if data is None:
-            self.data = io.imread('./data/sample.png')
+            try:
+              self.data = io.imread('./data/sample.png')
+            except:
+              print('sample.png not found, initialising empty Image')
+              self.data = np.zeros((10, 10, 3))
         else:
             self.data = data
 
