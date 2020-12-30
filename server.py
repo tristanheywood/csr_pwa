@@ -36,6 +36,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         if (self.path == '/'):
             self.do_get_root()
+        elif self.path == '/status':
+            self.do_get_status()
         elif (self.path == '/pic'):
             self.do_get_pic()
         elif (self.path == '/open_folder'):
@@ -93,6 +95,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         self.wfile.write(json.dumps(
             {'hasImages': len(imageFolder.images) > 0, 'thumbnails': imageFolder.get_thumbnails()}).encode('utf-8'))
+
+    def do_get_status(self):
+
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+
+        self.wfile.write(json.dumps(
+          {'status': 'good'}
+        ))
 
     def do_get_root(self):
         self.send_response(200)
