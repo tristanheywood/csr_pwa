@@ -28,6 +28,15 @@ else:
     from img import Image, ImageFolder
 
 
+nodeRecvQ = queue.Queue()
+nodeSendQ = queue.Queue()
+
+def log(*args):
+  msg = ' '.join(args)
+
+  print(msg)
+  nodeSendQ.put(msg)
+
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     image: Image = None
@@ -39,7 +48,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         # import pdb; pdb.set_trace();
-        print('Get to path: {}'.format(self.path))
+        log('Get to path: {}'.format(self.path))
 
         if (self.path == '/'):
             self.do_get_root()
@@ -213,8 +222,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         }).encode('utf-8'))
         self.wfile.write(response.getvalue())
 
-nodeRecvQ = queue.Queue()
-nodeSendQ = queue.Queue()
+
 
 
 def run_in_thread(func):
@@ -245,7 +253,7 @@ def run_node_websocket():
         send(),
         recv(),
       )
-    except websockets.exceptions.ConnectionClosedOK as e:
+    except websockets.exceptions.WebSocketException as e:
       print('NodeJS WS closed with exception:', e)
 
   asyncio.set_event_loop(asyncio.new_event_loop())
@@ -256,11 +264,11 @@ def run_node_websocket():
   asyncio.get_event_loop().run_until_complete(run_server)
   asyncio.get_event_loop().run_forever()
 
-@run_in_thread
-def ping_nodejs_websocket():
-  while True:
-    nodeSendQ.put('meme')
-    time.sleep(1)
+# @run_in_thread
+# def ping_nodejs_websocket():
+#   while True:
+#     nodeSendQ.put('meme')
+#     time.sleep(1)
 
 @run_in_thread
 def print_from_nodejs_websocket():
