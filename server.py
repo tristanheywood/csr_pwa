@@ -1,3 +1,4 @@
+from asyncio.tasks import sleep
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 from io import BytesIO
@@ -8,6 +9,12 @@ import webbrowser
 import tkinter
 import tkinter.filedialog
 import ctypes
+import asyncio
+import websockets
+import queue
+import threading
+import time
+
 from numpy.lib.type_check import imag
 
 import pyperclip
@@ -206,9 +213,69 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         }).encode('utf-8'))
         self.wfile.write(response.getvalue())
 
+nodeRecvQ = queue.Queue()
+nodeSendQ = queue.Queue()
+
+
+def run_in_thread(func):
+  threading.Thread(target = func, daemon=True).start()
+
+@run_in_thread
+def run_node_websocket():
+
+  async def connect(websocket, path):
+
+    async def send():
+      while True:
+        while not nodeSendQ.empty():
+          msg = nodeSendQ.get()
+          await websocket.send(msg)
+        await asyncio.sleep(0.1)
+      # if not nodeSendQ.empty():
+      #   msg = nodeSendQ.get()
+      #   await websocket.send(msg)
+
+    async def recv():
+      while True:
+        msg = await websocket.recv()
+        nodeRecvQ.put(msg)
+
+    try:
+      await asyncio.gather(
+        send(),
+        recv(),
+      )
+    except websockets.exceptions.ConnectionClosedOK as e:
+      print('NodeJS WS closed with exception:', e)
+
+  asyncio.set_event_loop(asyncio.new_event_loop())
+
+  run_server = websockets.serve(connect, 'localhost', 8001)
+  print('Starting websocket server for nodejs comms at localhost:8001')
+
+  asyncio.get_event_loop().run_until_complete(run_server)
+  asyncio.get_event_loop().run_forever()
+
+@run_in_thread
+def ping_nodejs_websocket():
+  while True:
+    nodeSendQ.put('meme')
+    time.sleep(1)
+
+@run_in_thread
+def print_from_nodejs_websocket():
+  while True:
+    while not nodeRecvQ.empty():
+      print(nodeRecvQ.get())
+    time.sleep(1)
+
+
+# thread = threading.Thread(target = run_node_websocket, daemon=True)
+# thread.start()
 
 # fix tkinter bad dpi scaling
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
+
 
 image = Image()
 imageFolder = None
