@@ -16,13 +16,13 @@ class Image:
     fname: str
     data: np.ndarray
 
-    def __init__(self, data = None, fname=None):
+    def __init__(self, data=None, fname=None):
         if data is None:
             try:
-              self.data = io.imread('./data/sample.png')
+                self.data = io.imread('./data/sample.png')
             except:
-              print('sample.png not found, initialising empty Image')
-              self.data = np.zeros((10, 10, 3))
+                print('sample.png not found, initialising empty Image')
+                self.data = np.zeros((10, 10, 3))
         else:
             self.data = data
 
@@ -63,7 +63,7 @@ class Image:
 
         im[irows, icols] = self.data[rows, cols]
 
-        im[:,:r] = colour
+        im[:, :r] = colour
 
         return Image(im)
 
@@ -83,11 +83,13 @@ class Image:
         io.imshow(self.data)
         io.show()
 
+
 if __name__ == '__main__':
     img = Image()
     cr = 294
     cc = 484
     r = 73
+
 
 class ImageFolder:
 
@@ -125,7 +127,8 @@ class ImageFolder:
 
             print('finished imread')
             print('WARNING: IMAGES ARE BEING DOWNSIZED')
-            images.append(Image(scanData[::cls.downsample, ::cls.downsample], scan))
+            images.append(
+                Image(scanData[::cls.downsample, ::cls.downsample], scan))
             # scanThumb = transform.resize(scanData, (scanData.shape[0] // 10, scanData.shape[1] // 10), anti_aliasing=True)
             # scanThumb = Image(np.asarray(scanData[::8, ::8], order='C'))
             # thumbnails.append({
@@ -140,7 +143,8 @@ class ImageFolder:
             {
                 'fileName': img.fname,
                 'img': base64.b64encode(
-                    Image(np.asarray(img.data[::8, ::8], order='C')).to_png_bytes()
+                    Image(np.asarray(
+                        img.data[::8, ::8], order='C')).to_png_bytes()
                 ).decode('ascii')
             }
             for img in self.images
@@ -148,3 +152,55 @@ class ImageFolder:
 
     def get_image_with_fname(self, fname: str) -> Image:
         return [i for i in self.images if i.fname == fname][0]
+
+
+class BlotchCircle:
+
+    id: int
+    centerRow: float
+    centerCol: float
+    radius: float
+    context: Image
+    avgColour: np.ndarray
+
+    def __init__(self, id: int, centerRow: float, centerCol: float, radius: float, context: Image, avgColour: np.ndarray):
+        self.id = id
+        self.centerRow = centerRow
+        self.centerCol = centerCol
+        self.radius = radius
+        self.context = context
+        self.avgColour = avgColour
+
+    @classmethod
+    def from_selected_circle(cls, id: int, centerRow: float, centerCol: float, radius: float, image: Image):
+
+        context = image.get_circle_context(centerRow, centerCol, radius)
+        avgColour = image.get_circle_colour(centerRow, centerCol, radius)
+
+        return cls(id, centerRow, centerCol, radius, context, avgColour)
+
+
+class ImageSession:
+
+    image: Image
+
+    blotchCircles: List[BlotchCircle]
+    nextBlotchId: int
+
+    def __init__(self, image: Image) -> None:
+        self.image = image
+
+        self.blotchCircles = []
+        self.nextBlotchId = 0
+
+    def add_circle(self, centerRow: float, centerCol: float, radius: float):
+        self.blotchCircles.append(BlotchCircle.from_selected_circle(
+            self.nextBlotchId, centerRow, centerCol, radius, self.image
+        ))
+        self.nextBlotchId += 1
+
+    def remove_circle(self, id: int):
+        for idx, bc in enumerate(self.blotchCircles):
+            if bc.id == id:
+                self.blotchCircles.pop(idx)
+                return
