@@ -28,9 +28,6 @@ if False is True:
 else:
     from img import Image, ImageFolder
 
-
-app = Flask(__name__)
-
 nodeRecvQ = queue.Queue()
 nodeSendQ = queue.Queue()
 
@@ -41,16 +38,58 @@ def log(*args):
     print(msg)
     nodeSendQ.put(msg)
 
-@app.route('/select_scan')
-def do_get_selected_scan():
-    fname = request.args.get('fname')
-    log('Processing get for file:', fname)
+def run_in_thread(func):
+    threading.Thread(target=func, daemon=True).start()
 
-    global imageFolder, colours
+@run_in_thread
+def run_node_websocket():
 
-    colours = []
+    async def connect(websocket, path):
 
-    return {'imgData': imageFolder.get_image_with_fname(fname).to_b64_png()}
+        async def send():
+            while True:
+                while not nodeSendQ.empty():
+                    msg = nodeSendQ.get()
+                    await websocket.send(msg)
+                await asyncio.sleep(0.1)
+            # if not nodeSendQ.empty():
+            #   msg = nodeSendQ.get()
+            #   await websocket.send(msg)
+
+        async def recv():
+            while True:
+                msg = await websocket.recv()
+                nodeRecvQ.put(msg)
+
+        try:
+            await asyncio.gather(
+                send(),
+                recv(),
+            )
+        except websockets.exceptions.WebSocketException as e:
+            print('NodeJS WS closed with exception:', e)
+
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
+    run_server = websockets.serve(connect, 'localhost', 8001)
+    print('Starting websocket server for nodejs comms at localhost:8001')
+
+    asyncio.get_event_loop().run_until_complete(run_server)
+    asyncio.get_event_loop().run_forever()
+
+# @run_in_thread
+# def ping_nodejs_websocket():
+#   while True:
+#     nodeSendQ.put('meme')
+#     time.sleep(1)
+
+
+@run_in_thread
+def print_from_nodejs_websocket():
+    while True:
+        while not nodeRecvQ.empty():
+            print(nodeRecvQ.get())
+        time.sleep(1)
 
 # def do_get_pic(self):
 #     self.send_response(200)
@@ -69,6 +108,18 @@ def do_get_selected_scan():
 #     self.wfile.write(json.dumps(
 #         {'meme': True, 'imgData': img64}).encode('utf-8'))
 
+app = Flask(__name__)
+
+@app.route('/select_scan')
+def do_get_selected_scan():
+    fname = request.args.get('fname')
+    log('Processing get for file:', fname)
+
+    global imageFolder, colours
+
+    colours = []
+
+    return {'imgData': imageFolder.get_image_with_fname(fname).to_b64_png()}
 
 @app.route('/open_folder')
 def do_open_folder():
@@ -134,58 +185,7 @@ def do_new_circle():
     # resp.write().encode('utf-8'))
     # return resp
 
-def run_in_thread(func):
-    threading.Thread(target=func, daemon=True).start()
 
-@run_in_thread
-def run_node_websocket():
-
-    async def connect(websocket, path):
-
-        async def send():
-            while True:
-                while not nodeSendQ.empty():
-                    msg = nodeSendQ.get()
-                    await websocket.send(msg)
-                await asyncio.sleep(0.1)
-            # if not nodeSendQ.empty():
-            #   msg = nodeSendQ.get()
-            #   await websocket.send(msg)
-
-        async def recv():
-            while True:
-                msg = await websocket.recv()
-                nodeRecvQ.put(msg)
-
-        try:
-            await asyncio.gather(
-                send(),
-                recv(),
-            )
-        except websockets.exceptions.WebSocketException as e:
-            print('NodeJS WS closed with exception:', e)
-
-    asyncio.set_event_loop(asyncio.new_event_loop())
-
-    run_server = websockets.serve(connect, 'localhost', 8001)
-    print('Starting websocket server for nodejs comms at localhost:8001')
-
-    asyncio.get_event_loop().run_until_complete(run_server)
-    asyncio.get_event_loop().run_forever()
-
-# @run_in_thread
-# def ping_nodejs_websocket():
-#   while True:
-#     nodeSendQ.put('meme')
-#     time.sleep(1)
-
-
-@run_in_thread
-def print_from_nodejs_websocket():
-    while True:
-        while not nodeRecvQ.empty():
-            print(nodeRecvQ.get())
-        time.sleep(1)
 
 
 # thread = threading.Thread(target = run_node_websocket, daemon=True)
