@@ -1,7 +1,7 @@
 pyperclip
-numpy==1.16.1
+numpy
 scipy
-scikit-image
+scikit-image==0.16.2
 pillow
 pyinstaller
 websockets

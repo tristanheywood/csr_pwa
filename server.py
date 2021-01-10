@@ -15,6 +15,8 @@ import websockets
 import queue
 import threading
 import time
+import logging
+import sys
 
 from numpy.lib.type_check import imag
 
@@ -31,12 +33,18 @@ else:
 nodeRecvQ = queue.Queue()
 nodeSendQ = queue.Queue()
 
-
 def log(*args):
     msg = ' '.join(args)
 
-    print(msg)
+    print('[Log]', msg)
     nodeSendQ.put(msg)
+
+class WSForwardLogHandler(logging.StreamHandler):
+
+  def emit(self, record):
+    print('wsforward.emit')
+    msg = self.format(record)
+    log(msg)
 
 def run_in_thread(func):
     threading.Thread(target=func, daemon=True).start()
@@ -109,6 +117,8 @@ def print_from_nodejs_websocket():
 #         {'meme': True, 'imgData': img64}).encode('utf-8'))
 
 app = Flask(__name__)
+app.logger.addHandler(WSForwardLogHandler())
+app.logger.setLevel(logging.INFO)
 
 @app.route('/select_scan')
 def do_get_selected_scan():
@@ -123,6 +133,7 @@ def do_get_selected_scan():
 
 @app.route('/open_folder')
 def do_open_folder():
+    log('opening folder selection ui')
 
     global imageFolder
     imageFolder = ImageFolder.from_gui_folder_selection()
@@ -199,7 +210,7 @@ image = Image()
 imageFolder = None
 colours = []
 # httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
-print('Serving...')
+log('Serving...')
 # webbrowser.open('http://localhost:8000')
 # httpd.serve_forever()
 
