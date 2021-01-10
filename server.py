@@ -117,8 +117,9 @@ def print_from_nodejs_websocket():
 #         {'meme': True, 'imgData': img64}).encode('utf-8'))
 
 app = Flask(__name__)
-app.logger.addHandler(WSForwardLogHandler())
-app.logger.setLevel(logging.INFO)
+handler = WSForwardLogHandler()
+handler.setLevel(logging.INFO)
+app.logger.addHandler(handler)
 
 @app.route('/select_scan')
 def do_get_selected_scan():
