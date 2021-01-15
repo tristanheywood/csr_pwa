@@ -79,8 +79,10 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
     console.log("Sotcat.render()");
     return (
       <div style={{
-        border: "1px solid black",
-        backgroundColor: "rgba(252, 210, 207, 0.8)"
+        // border: "1px solid black",
+        boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+        // backgroundColor: "rgba(252, 210, 207, 0.8)"
+        backgroundColor: "dimgray",
       }}>
         <ScanViewer
           onScanSelected={(fname: string) => {
@@ -362,17 +364,20 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
   render() {
     return (
       <div style={{
-        border: "1px solid black",
+        // border: "1px solid black",
+        boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
         display: "flex",
         flexDirection: "row",
-        width: 1000,
+        width: "100%",
+        minHeight: 100,
       }}>
         <div>
           <button
             style={{
-              height: 100,
-              width: 50,
+              height: "100%",
+              width: 70,
               fontSize: 12,
+              marginRight: 10,
             }}
             onClick={() => {
               fetch('http://localhost:8000/open_folder')
@@ -402,8 +407,9 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
         <div>
           <button
             style={{
-              height: 100,
+              height: "100%",
               width: 50,
+              marginRight: 10,
             }}
             onClick={() => {
               this._on_selection(this.state.selectedIdx - 1);
@@ -414,7 +420,8 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
           <button
             style={{
               width: 50,
-              height: 100,
+              height: "100%",
+              marginRight: 10,
             }}
             onClick={() => {
               this._on_selection(this.state.selectedIdx + 1);
@@ -433,9 +440,17 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
             src={`data:image/png;base64,${tn.img64}`}
             width="150"
             style={i == this.state.selectedIdx ? {
-              border: "5px solid green",
-            } : {}}
+              border: "3px solid rgb(112, 167, 255)",
+              borderRadius: 5,
+              boxShadow: "0 4px 8px 0 rgba(0, 0, 50, 0.4), 0 6px 20px 0 rgba(0, 0, 50, 0.4)",
+              marginRight: 3,
+            } : {
+              marginRight: 3,
+            }}
             ref={i == this.state.selectedIdx ? this.selectedTNRef : undefined}
+            onClick={() => {
+              this._on_selection(i);
+            }}
           />)}
         </div>
       </div>
