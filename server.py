@@ -27,8 +27,11 @@ import numpy as np
 # ide likes .img imports, python does not
 if False is True:
     from .img import Image, ImageFolder
+    from .protobuf_py.types import *
 else:
     from img import Image, ImageFolder
+    from protobuf_py.types import *
+
 
 nodeRecvQ = queue.Queue()
 nodeSendQ = queue.Queue()
@@ -147,24 +150,29 @@ def do_open_folder():
 @app.route('/new_circle', methods=['POST'])
 def do_new_circle():
 
-    body = json.loads(request.get_data())
+    # body = json.loads(request.get_data())
+    body = request.get_data()
     # print(request)
     print('body:', body)
+
+    pc = PickedCircle.FromString(body)
+
+    print(pc.to_dict())
 
     # global image
     # self.image = image
 
     global imageFolder
-    image = imageFolder.get_image_with_fname(body['fname'])
+    image = imageFolder.get_image_with_fname(pc.img_file_name)
 
     # self.image.add_circle(int(body['center']['y']), int(body['center']['x']), int(body['radius']))
     # self.image.show()
-    cr = int(body['center']['y'])
-    cc = int(body['center']['x'])
-    r = int(body['radius'])
+    cr = int(pc.center_y)
+    cc = int(pc.center_x)
+    r = int(pc.radius)
 
-    im = image.get_circle_context(int(body['center']['y']), int(
-        body['center']['x']), int(body['radius']))
+    im = image.get_circle_context(int(pc.center_y), int(
+        pc.center_x), int(pc.radius))
 
     contextPNG = im.to_png_bytes()
     img64 = base64.b64encode(contextPNG).decode('ascii')
@@ -181,7 +189,6 @@ def do_new_circle():
     pyperclip.copy(
         clipboard
     )
-
     return {
         "circContext": img64,
         "meanColour": [int(x) for x in colour],

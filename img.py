@@ -204,3 +204,13 @@ class ImageSession:
             if bc.id == id:
                 self.blotchCircles.pop(idx)
                 return
+
+# class Session:
+
+#   imgFolder: ImageFolder
+#   currImgSession: ImageSession
+
+#   def __init__(self) -> None:
+#     pass
+
+#   def set_imgFolder(imgFolder: ImageFolder):

@@ -6,3 +6,4 @@ pillow
 pyinstaller
 websockets
 Flask
+betterproto[compiler]
