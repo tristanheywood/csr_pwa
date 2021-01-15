@@ -296,6 +296,11 @@ class Drop extends React.Component<DropProps, DropState> {
 
 class ClipboardView extends React.Component<{ text: string }, {}> {
 
+  thStyle = {textAlign: "center",  width: 40,};
+  trStyle = {
+    borderBottom: "1px solid rgba(0, 0, 0, 0.2)",
+  };
+
   render() {
     console.log(this.props.text.split("\n").map(row => {
       <tr>
@@ -307,23 +312,53 @@ class ClipboardView extends React.Component<{ text: string }, {}> {
       </tr>
     }));
     return (
-      <table>
+      <table style = {{
+        boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+        border: "1px solid rgba(0, 0, 0, 0.2)",
+        borderRadius: 5,
+        margin: 3,
+        borderCollapse: "collapse",
+      }}>
+        <thead style = {{
+          borderBottom: "1px solid gray",
+          borderRadius: 5,
+        }}>
+          <tr style = {this.trStyle}>
+            {["", "μR", "μG", "μB","%R", "%G", "%B", "σR", "σG", "σB", ].map((header, idx) => {
+              console.log(idx, idx % 3 == 1);
+              return (
+              <th style = {{
+                textAlign: "center",
+                width: 40,
+                borderRight: idx % 3 == 0 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined
+              }}>{header}</th>
+              );
+            })}
+          </tr>
+        </thead>
         <tbody>
           {this.props.text.split("\n").map(row =>
-            <tr>
-              {row.split("\t").map(elt =>
+            <tr style = {this.trStyle}>
+              {[
+                <td style = {{
+                  borderRight: "1px solid rgba(0, 0, 0, 0.2)",
+                }}>
+                  <div style = {{
+                    backgroundColor: `rgb(${row.split("\t").join(",")})`,
+                    width: 20,
+                    marginLeft: 10,
+                    height: "100%",
+                    borderRadius: 2,
+                  }}/>
+                </td>
+              ].concat(row.split("\t").map((elt, idx) =>
                 <td style={{
-                  border: "1px solid black"
+                  textAlign: "center",
+                  borderRight: idx == 2 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
                 }}>
                   {elt}
                 </td>
-              ).concat([
-                <td style = {{
-                  backgroundColor: `rgb(${row.split("\t").join(",")})`,
-                  width: 20,
-                  border: "1px solid black"
-                }}></td>
-              ])}
+              ))}
             </tr>
           )}
         </tbody>
@@ -377,7 +412,7 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
               height: "100%",
               width: 70,
               fontSize: 12,
-              marginRight: 10,
+              marginRight: 3,
             }}
             onClick={() => {
               fetch('http://localhost:8000/open_folder')
@@ -409,7 +444,7 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
             style={{
               height: "100%",
               width: 50,
-              marginRight: 10,
+              marginRight: 3,
             }}
             onClick={() => {
               this._on_selection(this.state.selectedIdx - 1);
@@ -421,7 +456,7 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
             style={{
               width: 50,
               height: "100%",
-              marginRight: 10,
+              marginRight: 3,
             }}
             onClick={() => {
               this._on_selection(this.state.selectedIdx + 1);
