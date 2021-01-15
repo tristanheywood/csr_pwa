@@ -10,6 +10,11 @@ import numpy as np
 from skimage import data, io, filters, draw
 from PIL import Image as PILImage
 
+if False is True:
+  from .protobuf_py.types import *
+else:
+  from protobuf_py.types import *
+
 
 class Image:
 
@@ -27,6 +32,10 @@ class Image:
             self.data = data
 
         self.fname = fname
+
+    @classmethod
+    def from_img_file(cls, fname):
+      return cls(data = io.imread(fname))
 
     def add_circle(self, centerR, centerC, radius):
         rr, cc = draw.circle_perimeter(centerR, centerC, radius)
@@ -51,6 +60,22 @@ class Image:
         colour = np.mean(self.data[rows, cols], axis=0)
 
         return colour
+
+    def get_cicle_stats(self, cr, cc, r) -> PickStats:
+
+      rows, cols = draw.disk((cc, cr), r)
+
+      mu = np.mean(self.data[rows, cols], axis=0)
+      sigma = np.std(self.data[rows, cols], axis=0)
+
+      ps = PickStats()
+      ps.mu_r = mu[0]
+      ps.mu_g = mu[1]
+      ps.mu_b = mu[2]
+      ps.sigma_r = sigma[0]
+      ps.sigma_g = sigma[1]
+      ps.sigma_b = sigma[2]
+      ps.perc_r =
 
     def get_colour_display(self, cr, cc, r):
         colour = self.get_circle_colour(cr, cc, r)
@@ -161,15 +186,17 @@ class BlotchCircle:
     centerCol: float
     radius: float
     context: Image
-    avgColour: np.ndarray
+    # avgColour: np.ndarray
+    pickStats: PickStats
 
-    def __init__(self, id: int, centerRow: float, centerCol: float, radius: float, context: Image, avgColour: np.ndarray):
+    def __init__(self, id: int, centerRow: float, centerCol: float, radius: float, context: Image, avgColour: np.ndarray, pickStats: PickStats):
         self.id = id
         self.centerRow = centerRow
         self.centerCol = centerCol
         self.radius = radius
         self.context = context
         self.avgColour = avgColour
+        self.pickStats = pickStats
 
     @classmethod
     def from_selected_circle(cls, id: int, centerRow: float, centerCol: float, radius: float, image: Image):
@@ -205,12 +232,12 @@ class ImageSession:
                 self.blotchCircles.pop(idx)
                 return
 
-# class Session:
+class Session:
 
-#   imgFolder: ImageFolder
-#   currImgSession: ImageSession
+  imgFolder: ImageFolder
+  currImgSession: ImageSession
 
-#   def __init__(self) -> None:
-#     pass
+  def __init__(self) -> None:
+    pass
 
-#   def set_imgFolder(imgFolder: ImageFolder):
+  def set_imgFolder(imgFolder: ImageFolder):

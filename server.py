@@ -24,6 +24,8 @@ import pyperclip
 from skimage import io, transform
 import numpy as np
 
+from sotcat_backend.img import Session
+
 # ide likes .img imports, python does not
 if False is True:
     from .img import Image, ImageFolder
@@ -37,7 +39,7 @@ nodeRecvQ = queue.Queue()
 nodeSendQ = queue.Queue()
 
 def log(*args):
-    msg = ' '.join(args)
+    msg = ' '.join(str(arg) for arg in args)
 
     print('[Log]', msg)
     nodeSendQ.put(msg)
@@ -129,22 +131,27 @@ def do_get_selected_scan():
     fname = request.args.get('fname')
     log('Processing get for file:', fname)
 
-    global imageFolder, colours
+    # global imageFolder, colours
 
-    colours = []
+    # colours = []
 
-    return {'imgData': imageFolder.get_image_with_fname(fname).to_b64_png()}
+    global session
+
+    return {'imgData': session.imgFolder.get_image_with_fname(fname).to_b64_png()}
 
 @app.route('/open_folder')
 def do_open_folder():
     log('opening folder selection ui')
 
-    global imageFolder
-    imageFolder = ImageFolder.from_gui_folder_selection()
+    # global imageFolder
+    # imageFolder = ImageFolder.from_gui_folder_selection()
+
+    global session
+    session.set_imgFolder(ImageFolder.from_gui_folder_selection())
 
     return {
-        'hasImages': len(imageFolder.images) > 0,
-        'thumbnails': imageFolder.get_thumbnails()
+        'hasImages': len(session.imgFolder.images) > 0,
+        'thumbnails': session.imgFolder.get_thumbnails()
     }
 
 @app.route('/new_circle', methods=['POST'])
@@ -157,13 +164,16 @@ def do_new_circle():
 
     pc = PickedCircle.FromString(body)
 
-    print(pc.to_dict())
+    log('/new_circle', pc.to_dict())
 
     # global image
     # self.image = image
 
-    global imageFolder
-    image = imageFolder.get_image_with_fname(pc.img_file_name)
+    # global imageFolder
+    # image = imageFolder.get_image_with_fname(pc.img_file_name)
+
+    global session
+    image = session.imgFolder.get_image_with_fname(pc.img_file_name)
 
     # self.image.add_circle(int(body['center']['y']), int(body['center']['x']), int(body['radius']))
     # self.image.show()
@@ -214,9 +224,12 @@ def do_new_circle():
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 
-image = Image()
-imageFolder = None
-colours = []
+# image = Image()
+# imageFolder = None
+# colours = []
+
+session = Session()
+
 # httpd = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
 log('Serving...')
 # webbrowser.open('http://localhost:8000')
