@@ -1,4 +1,5 @@
 import React from 'react';
+import { PickedCircle } from './protobuf_js/types_pb'
 
 type SotcatProps = {
 
@@ -140,7 +141,6 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
                   this.amDrawingCircle = false;
                   // return;
 
-
                   this.postCircle(
                     {
                       x: this.circleCenter!.x / this.imgScale,
@@ -206,13 +206,23 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
   }
 
   postCircle(center: { x: number, y: number }, radius: number) {
+
+    let pc = new PickedCircle();
+    pc.setCenterx(center.x);
+    pc.setCentery(center.y);
+    pc.setRadius(radius);
+    pc.setImgfilename(this.state.selectedScanFname);
+
+    let msg = pc.serializeBinary();
+
     fetch('http://localhost:8000/new_circle', {
       method: 'POST',
-      body: JSON.stringify({
-        center: center,
-        radius: radius,
-        fname: this.state.selectedScanFname,
-      })
+      // body: JSON.stringify({
+      //   center: center,
+      //   radius: radius,
+      //   fname: this.state.selectedScanFname,
+      // })
+      body: msg,
     }).then(res => res.json())
       .then((result) => {
         console.log(result)
