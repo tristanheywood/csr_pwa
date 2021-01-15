@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+message PickStats {
+  double muR = 1;
+  double muG = 2;
+  double muB = 3;
+  double percR = 4;
+  double percG = 5;
+  double precB = 6;
+  double sigmaR = 7;
+  double sigmaG = 8;
+  double sigmaB = 9;
+}
+
+message ClipboardContent {
+  repeated PickStats rows = 1;
+}
+
+message PickedCircle {
+  double centerX = 1;
+  double centerY = 2;
+  double radius = 3;
+  string imgFileName = 4;
+}
