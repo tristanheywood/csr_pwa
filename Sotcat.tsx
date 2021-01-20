@@ -1,5 +1,5 @@
 import React from 'react';
-import { PickedCircle } from './protobuf_js/types_pb'
+import { PickedCircle, ClipboardContent } from './protobuf_js/types_pb'
 
 type SotcatProps = {
 
@@ -9,7 +9,7 @@ type SotcatState = {
   imgData?: string,
   img?: HTMLImageElement;
   drops: Array<JSX.Element>,
-  clipboardContent: string,
+  clipboardContent: ClipboardContent,
   selectedScanFname: string,
 }
 
@@ -32,7 +32,7 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
       imgData: undefined,
       drops: [],
       img: undefined,
-      clipboardContent: "",
+      clipboardContent: new ClipboardContent(),
       selectedScanFname: "",
     }
     this.amDrawingCircle = false;
@@ -91,7 +91,7 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
             this.setState({
               selectedScanFname: fname,
               drops: [],
-              clipboardContent: "",
+              clipboardContent: new ClipboardContent(),
             })
 
             let url = new URL('http://localhost:8000/select_scan')
@@ -225,14 +225,14 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
       body: msg,
     }).then(res => res.json())
       .then((result) => {
-        console.log(result)
+        console.log(result);
         this.setState(prevState => ({
           drops: [...prevState.drops, <Drop
             contextPicB64={result.circContext}
             colourComparePicB64={result.colourCompare}
             key={this.state.drops.length}
           />],
-          clipboardContent: result.clipboardContent,
+          clipboardContent: ClipboardContent.deserializeBinary(result.clipboardContent),
         }))
       })
   }

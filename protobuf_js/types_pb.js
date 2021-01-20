@@ -115,7 +115,7 @@ proto.PickStats.toObject = function(includeInstance, msg) {
     mub: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
     percr: jspb.Message.getFloatingPointFieldWithDefault(msg, 4, 0.0),
     percg: jspb.Message.getFloatingPointFieldWithDefault(msg, 5, 0.0),
-    precb: jspb.Message.getFloatingPointFieldWithDefault(msg, 6, 0.0),
+    percb: jspb.Message.getFloatingPointFieldWithDefault(msg, 6, 0.0),
     sigmar: jspb.Message.getFloatingPointFieldWithDefault(msg, 7, 0.0),
     sigmag: jspb.Message.getFloatingPointFieldWithDefault(msg, 8, 0.0),
     sigmab: jspb.Message.getFloatingPointFieldWithDefault(msg, 9, 0.0)
@@ -177,7 +177,7 @@ proto.PickStats.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 6:
       var value = /** @type {number} */ (reader.readDouble());
-      msg.setPrecb(value);
+      msg.setPercb(value);
       break;
     case 7:
       var value = /** @type {number} */ (reader.readDouble());
@@ -255,7 +255,7 @@ proto.PickStats.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getPrecb();
+  f = message.getPercb();
   if (f !== 0.0) {
     writer.writeDouble(
       6,
@@ -377,10 +377,10 @@ proto.PickStats.prototype.setPercg = function(value) {
 
 
 /**
- * optional double precB = 6;
+ * optional double percB = 6;
  * @return {number}
  */
-proto.PickStats.prototype.getPrecb = function() {
+proto.PickStats.prototype.getPercb = function() {
   return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 6, 0.0));
 };
 
@@ -389,7 +389,7 @@ proto.PickStats.prototype.getPrecb = function() {
  * @param {number} value
  * @return {!proto.PickStats} returns this
  */
-proto.PickStats.prototype.setPrecb = function(value) {
+proto.PickStats.prototype.setPercb = function(value) {
   return jspb.Message.setProto3FloatField(this, 6, value);
 };
 

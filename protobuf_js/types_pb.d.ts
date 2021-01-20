@@ -19,8 +19,8 @@ export class PickStats extends jspb.Message {
   getPercg(): number;
   setPercg(value: number): void;
 
-  getPrecb(): number;
-  setPrecb(value: number): void;
+  getPercb(): number;
+  setPercb(value: number): void;
 
   getSigmar(): number;
   setSigmar(value: number): void;
@@ -48,7 +48,7 @@ export namespace PickStats {
     mub: number,
     percr: number,
     percg: number,
-    precb: number,
+    percb: number,
     sigmar: number,
     sigmag: number,
     sigmab: number,
