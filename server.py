@@ -11,6 +11,7 @@ import tkinter
 import tkinter.filedialog
 import ctypes
 import asyncio
+from flask.globals import session
 import websockets
 import queue
 import threading
@@ -174,6 +175,7 @@ def do_new_circle():
 
     global session
     image = session.imgFolder.get_image_with_fname(pc.img_file_name)
+    imgSess = session.currImgSession
 
     # self.image.add_circle(int(body['center']['y']), int(body['center']['x']), int(body['radius']))
     # self.image.show()
@@ -187,23 +189,30 @@ def do_new_circle():
     contextPNG = im.to_png_bytes()
     img64 = base64.b64encode(contextPNG).decode('ascii')
 
-    colour = image.get_circle_colour(cr, cc, r)
+    session.currImgSession.add_circle(cr, cc, r)
+
+    # colour = image.get_circle_colour(cr, cc, r)
     comparePNG = image.get_colour_display(cr, cc, r).to_png_bytes()
     compare64 = base64.b64encode(comparePNG).decode('ascii')
 
-    global colours
-    colours.append([int(x) for x in colour])
+    # global colours
+    # colours.append([int(x) for x in colour])
 
-    clipboard = '\n'.join('\t'.join(str(component) for component in _colour)
-                          for _colour in colours)
-    pyperclip.copy(
-        clipboard
-    )
+
+
+    # clipboard = '\n'.join('\t'.join(str(component) for component in _colour)
+                          # for _colour in colours)
+    # pyperclip.copy(
+    #     clipboard
+    # )
+
+    pyperclip.copy(imgSess.get_clipboard_str())
+
     return {
         "circContext": img64,
         "meanColour": [int(x) for x in colour],
         "colourCompare": compare64,
-        "clipboardContent": clipboard,
+        "clipboardContent": imgSess.get_clipboard_content_msg().SerializeToString(),
     }
 
     # import pdb; pdb.set_trace();

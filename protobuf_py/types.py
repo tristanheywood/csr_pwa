@@ -14,7 +14,7 @@ class PickStats(betterproto.Message):
     mu_b: float = betterproto.double_field(3)
     perc_r: float = betterproto.double_field(4)
     perc_g: float = betterproto.double_field(5)
-    prec_b: float = betterproto.double_field(6)
+    perc_b: float = betterproto.double_field(6)
     sigma_r: float = betterproto.double_field(7)
     sigma_g: float = betterproto.double_field(8)
     sigma_b: float = betterproto.double_field(9)

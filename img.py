@@ -11,9 +11,9 @@ from skimage import data, io, filters, draw
 from PIL import Image as PILImage
 
 if False is True:
-  from .protobuf_py.types import *
+    from .protobuf_py.types import *
 else:
-  from protobuf_py.types import *
+    from protobuf_py.types import *
 
 
 class Image:
@@ -24,9 +24,9 @@ class Image:
     def __init__(self, data=None, fname=None):
         if data is None:
             try:
-                self.data = io.imread('./data/sample.png')
+                self.data = io.imread("./data/sample.png")
             except:
-                print('sample.png not found, initialising empty Image')
+                print("sample.png not found, initialising empty Image")
                 self.data = np.zeros((10, 10, 3))
         else:
             self.data = data
@@ -35,7 +35,7 @@ class Image:
 
     @classmethod
     def from_img_file(cls, fname):
-      return cls(data = io.imread(fname))
+        return cls(data=io.imread(fname))
 
     def add_circle(self, centerR, centerC, radius):
         rr, cc = draw.circle_perimeter(centerR, centerC, radius)
@@ -47,11 +47,13 @@ class Image:
         row, col = draw.circle_perimeter(cr, cc, r)
         newIm[row, col] = [255, 0, 0]
 
-        return Image(newIm[
-            max(cr - s*r, 0): min(cr + s*r, newIm.shape[0]),
-            max(cc - s*r, 0): min(cc + s*r, newIm.shape[1]),
-            :
-        ])
+        return Image(
+            newIm[
+                max(cr - s * r, 0) : min(cr + s * r, newIm.shape[0]),
+                max(cc - s * r, 0) : min(cc + s * r, newIm.shape[1]),
+                :,
+            ]
+        )
 
     def get_circle_colour(self, cr, cc, r):
         rows, cols = draw.disk((cr, cc), r)
@@ -61,28 +63,35 @@ class Image:
 
         return colour
 
-    def get_cicle_stats(self, cr, cc, r) -> PickStats:
+    def get_circle_stats(self, cr, cc, r) -> PickStats:
 
-      rows, cols = draw.disk((cc, cr), r)
+        rows, cols = draw.disk((cc, cr), r)
 
-      mu = np.mean(self.data[rows, cols], axis=0)
-      sigma = np.std(self.data[rows, cols], axis=0)
+        mu = np.mean(self.data[rows, cols], axis=0)
+        sigma = np.std(self.data[rows, cols], axis=0)
 
-      ps = PickStats()
-      ps.mu_r = mu[0]
-      ps.mu_g = mu[1]
-      ps.mu_b = mu[2]
-      ps.sigma_r = sigma[0]
-      ps.sigma_g = sigma[1]
-      ps.sigma_b = sigma[2]
-      ps.perc_r =
+        ps = PickStats()
+        ps.mu_r = mu[0]
+        ps.mu_g = mu[1]
+        ps.mu_b = mu[2]
+        ps.sigma_r = sigma[0]
+        ps.sigma_g = sigma[1]
+        ps.sigma_b = sigma[2]
+
+        totSum = np.sum(self.data[rows, cols])
+
+        ps.perc_r = np.sum(self.data[rows, cols][:, 0]) / totSum
+        ps.perc_g = np.sum(self.data[rows, cols][:, 1]) / totSum
+        ps.prec_b = np.sum(self.data[rows, cols][:, 2]) / totSum
+
+        return ps
 
     def get_colour_display(self, cr, cc, r):
         colour = self.get_circle_colour(cr, cc, r)
 
         rows, cols = draw.disk((cr, cc), r)
 
-        im = np.full((2*r, 2*r, 3), 255, dtype=self.data.dtype)
+        im = np.full((2 * r, 2 * r, 3), 255, dtype=self.data.dtype)
 
         irows, icols = draw.disk((r, r), r)
 
@@ -97,19 +106,19 @@ class Image:
         with BytesIO() as stream:
 
             pIm = PILImage.fromarray(self.data)
-            pIm.save(stream, format='PNG')
+            pIm.save(stream, format="PNG")
 
             return stream.getvalue()
 
     def to_b64_png(self):
-        return base64.b64encode(self.to_png_bytes()).decode('ascii')
+        return base64.b64encode(self.to_png_bytes()).decode("ascii")
 
     def show(self):
         io.imshow(self.data)
         io.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     img = Image()
     cr = 294
     cc = 484
@@ -142,18 +151,17 @@ class ImageFolder:
         images = []
 
         for scan in scans:
-            fname = res + '/' + scan
-            print('opening: ', fname)
+            fname = res + "/" + scan
+            print("opening: ", fname)
             try:
                 scanData = io.imread(fname)
             except:
-                print('Failed to open', fname)
+                print("Failed to open", fname)
                 continue
 
-            print('finished imread')
-            print('WARNING: IMAGES ARE BEING DOWNSIZED')
-            images.append(
-                Image(scanData[::cls.downsample, ::cls.downsample], scan))
+            print("finished imread")
+            print("WARNING: IMAGES ARE BEING DOWNSIZED")
+            images.append(Image(scanData[:: cls.downsample, :: cls.downsample], scan))
             # scanThumb = transform.resize(scanData, (scanData.shape[0] // 10, scanData.shape[1] // 10), anti_aliasing=True)
             # scanThumb = Image(np.asarray(scanData[::8, ::8], order='C'))
             # thumbnails.append({
@@ -166,11 +174,10 @@ class ImageFolder:
     def get_thumbnails(self):
         return [
             {
-                'fileName': img.fname,
-                'img': base64.b64encode(
-                    Image(np.asarray(
-                        img.data[::8, ::8], order='C')).to_png_bytes()
-                ).decode('ascii')
+                "fileName": img.fname,
+                "img": base64.b64encode(
+                    Image(np.asarray(img.data[::8, ::8], order="C")).to_png_bytes()
+                ).decode("ascii"),
             }
             for img in self.images
         ]
@@ -186,25 +193,46 @@ class BlotchCircle:
     centerCol: float
     radius: float
     context: Image
-    # avgColour: np.ndarray
     pickStats: PickStats
 
-    def __init__(self, id: int, centerRow: float, centerCol: float, radius: float, context: Image, avgColour: np.ndarray, pickStats: PickStats):
+    def __init__(
+        self,
+        id: int,
+        centerRow: float,
+        centerCol: float,
+        radius: float,
+        context: Image,
+        pickStats: PickStats,
+    ):
         self.id = id
         self.centerRow = centerRow
         self.centerCol = centerCol
         self.radius = radius
         self.context = context
-        self.avgColour = avgColour
         self.pickStats = pickStats
 
     @classmethod
-    def from_selected_circle(cls, id: int, centerRow: float, centerCol: float, radius: float, image: Image):
+    def from_selected_circle(
+        cls, id: int, centerRow: float, centerCol: float, radius: float, image: Image
+    ):
 
         context = image.get_circle_context(centerRow, centerCol, radius)
         avgColour = image.get_circle_colour(centerRow, centerCol, radius)
 
-        return cls(id, centerRow, centerCol, radius, context, avgColour)
+        return cls(
+            id,
+            centerRow,
+            centerCol,
+            radius,
+            context,
+            image.get_circle_stats(centerRow, centerCol, radius),
+        )
+
+    def get_clipboard_str(self):
+      pc = self.pickStats
+      return '\t'.join(
+        [pc.mu_r ,pc.mu_g, pc.mu_b, pc.perc_r, pc.perc_g, pc.perc_b, pc.sigma_r, pc.sigma_g, pc.sigma_b]
+      )
 
 
 class ImageSession:
@@ -221,9 +249,11 @@ class ImageSession:
         self.nextBlotchId = 0
 
     def add_circle(self, centerRow: float, centerCol: float, radius: float):
-        self.blotchCircles.append(BlotchCircle.from_selected_circle(
-            self.nextBlotchId, centerRow, centerCol, radius, self.image
-        ))
+        self.blotchCircles.append(
+            BlotchCircle.from_selected_circle(
+                self.nextBlotchId, centerRow, centerCol, radius, self.image
+            )
+        )
         self.nextBlotchId += 1
 
     def remove_circle(self, id: int):
@@ -232,12 +262,25 @@ class ImageSession:
                 self.blotchCircles.pop(idx)
                 return
 
+    def get_clipboard_str(self) -> str:
+      return '\n'.join(bc.get_clipboard_str() for bc in self.blotchCircles)
+
+    def get_clipboard_content_msg(self) -> ClipboardContent:
+      cc = ClipboardContent()
+
+      for bc in self.blotchCircles:
+        cc.rows.append(bc.pickStats)
+
+      return cc
+
+
 class Session:
 
-  imgFolder: ImageFolder
-  currImgSession: ImageSession
+    imgFolder: ImageFolder
+    currImgSession: ImageSession
 
-  def __init__(self) -> None:
-    pass
+    def __init__(self) -> None:
+        pass
 
-  def set_imgFolder(imgFolder: ImageFolder):
+    def set_imgFolder(imgFolder: ImageFolder):
+        pass
