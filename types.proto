@@ -6,7 +6,7 @@ message PickStats {
   double muB = 3;
   double percR = 4;
   double percG = 5;
-  double precB = 6;
+  double percB = 6;
   double sigmaR = 7;
   double sigmaG = 8;
   double sigmaB = 9;
