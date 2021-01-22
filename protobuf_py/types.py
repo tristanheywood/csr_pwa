@@ -31,3 +31,41 @@ class PickedCircle(betterproto.Message):
     center_y: float = betterproto.double_field(2)
     radius: float = betterproto.double_field(3)
     img_file_name: str = betterproto.string_field(4)
+
+
+@dataclass
+class FolderImage(betterproto.Message):
+    """an image in the currently selected folder"""
+
+    file_name: str = betterproto.string_field(1)
+    thumbnail_img_v_f_n: str = betterproto.string_field(2)
+
+
+@dataclass
+class ScanFolder(betterproto.Message):
+    """the currently selected folder"""
+
+    folder_images: List["FolderImage"] = betterproto.message_field(1)
+
+
+@dataclass
+class ReadBlotch(betterproto.Message):
+    circle: "PickedCircle" = betterproto.message_field(1)
+    stats: "PickStats" = betterproto.message_field(2)
+    context_v_f_n: str = betterproto.string_field(3)
+    compare_v_f_n: str = betterproto.string_field(4)
+
+
+@dataclass
+class ActiveImage(betterproto.Message):
+    file_name: str = betterproto.string_field(1)
+    img_data_v_f_n: str = betterproto.string_field(2)
+    read_blotches: List["ReadBlotch"] = betterproto.message_field(3)
+
+
+@dataclass
+class UIState(betterproto.Message):
+    open_folder: "ScanFolder" = betterproto.message_field(1)
+    selected_folder_img_idx: int = betterproto.int32_field(2)
+    active_image: "ActiveImage" = betterproto.message_field(3)
+    clipboard_content: "ClipboardContent" = betterproto.message_field(4)

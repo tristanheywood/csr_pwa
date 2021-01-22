@@ -1,37 +1,93 @@
-from typing import List
+from typing import List, Dict, Any
 
+from abc import ABC
 from io import BytesIO
 import tkinter
 import tkinter.filedialog
 import base64
 import os
+from io import BytesIO
+import uuid
+import PIL
 
 import numpy as np
 from skimage import data, io, filters, draw
 from PIL import Image as PILImage
+from websockets.typing import Data
 
 if False is True:
     from .protobuf_py.types import *
 else:
     from protobuf_py.types import *
 
+class ImgLogger:
 
-class Image:
+  log: Any
+
+class BaseImage(ABC):
+
+  @property
+  def data(self) -> np.ndarray:
+    raise NotImplementedError()
+
+  @property
+  def pngBytesIO(self) -> BytesIO:
+    if self._pngBytesIO is None:
+      self._pngBytesIO = BytesIO()
+      PILImage.fromarray(self.data).save(self._pngBytesIO, format="PNG")
+
+    return self._pngBytesIO
+
+  @property
+  def name(self) -> str:
+    raise NotImplementedError()
+
+
+class FileImage(BaseImage):
 
     fname: str
-    data: np.ndarray
+    # fileDownsample: int = 2 # downsample images when reading from files
 
-    def __init__(self, data=None, fname=None):
-        if data is None:
-            try:
-                self.data = io.imread("./data/sample.png")
-            except:
-                print("sample.png not found, initialising empty Image")
-                self.data = np.zeros((10, 10, 3))
-        else:
-            self.data = data
+    _data: np.ndarray
+    virtualFileName: str
+    _pngBytesIO: BytesIO
+
+    def __init__(self, fname):
+        # if data is None:
+        #     try:
+        #         self._data = io.imread("./data/sample.png")
+        #     except:
+        #         print("sample.png not found, initialising empty Image")
+        #         self._data = np.zeros((10, 10, 3))
+        # else:
+        #     self.data = data
 
         self.fname = fname
+        self.virtualFileName = None
+        self._pngBytesIO = None
+        self._data = None
+
+    @property
+    def data(self):
+      if self._data is None:
+        ImgLogger.log('Opening', self.fname)
+        # ImgLogger.log('WARNING: IMAGES ARE BEING DOWNSAMPLED')
+        # self._data = io.imread(self.fname)[:: self.fileDownsample, :: self.fileDownsample]
+        self._data = io.imread(self.fname)
+
+      return self._data
+
+    @property
+    def pngBytesIO(self):
+      if self._pngBytesIO is None:
+        self._pngBytesIO = BytesIO()
+        PILImage.fromarray(self.data).save(self._pngBytesIO, format="PNG")
+
+      return self._pngBytesIO
+
+    @property
+    def name(self) -> str:
+      return self.fname
 
     @classmethod
     def from_img_file(cls, fname):
@@ -47,7 +103,7 @@ class Image:
         row, col = draw.circle_perimeter(cr, cc, r)
         newIm[row, col] = [255, 0, 0]
 
-        return Image(
+        return DataImage(
             newIm[
                 max(cr - s * r, 0) : min(cr + s * r, newIm.shape[0]),
                 max(cc - s * r, 0) : min(cc + s * r, newIm.shape[1]),
@@ -99,7 +155,7 @@ class Image:
 
         im[:, :r] = colour
 
-        return Image(im)
+        return DataImage(im)
 
     def to_png_bytes(self):
 
@@ -117,21 +173,104 @@ class Image:
         io.imshow(self.data)
         io.show()
 
+class ThumbnailImage(BaseImage):
 
-if __name__ == "__main__":
-    img = Image()
-    cr = 294
-    cc = 484
-    r = 73
+  _srcImg: BaseImage
+
+  _data: np.ndarray
+  _pngBytesIO: BytesIO
+
+  def __init__(self, srcImg: BaseImage):
+    self._srcImg = srcImg
+    self._data = None
+    self._pngBytesIO = None
+
+  @property
+  def data(self) -> np.ndarray:
+    if self._data is None:
+      self._data = np.asarray(self._srcImg.data[::8, ::8], order='C')
+
+    return self._data
+
+  @property
+  def pngBytesIO(self) -> BytesIO:
+    if self._pngBytesIO is None:
+      self._pngBytesIO = BytesIO()
+      PILImage.fromarray(self.data).save(self._pngBytesIO, format="PNG")
+
+    return self._pngBytesIO
+
+  @property
+  def name(self) -> str:
+    return 'thumbnail_' + self._srcImg.name
+
+class MiniFileImage(BaseImage):
+
+  _srcImg: BaseImage
+  _downsampleFactor: int
+
+  _data: np.ndarray
+  _pngBytesIO: BytesIO
+
+  def __init__(self, srcImg: BaseImage, downsampleFactor: int = 4):
+    self._srcImg = srcImg
+    self._downsampleFactor = downsampleFactor
+
+    self._data = None
+    self._pngBytesIO = None
+
+  @property
+  def data(self) -> np.ndarray:
+    if self._data is None:
+      self._data = np.asarray(self._srcImg.data[::self._downsampleFactor, ::self._downsampleFactor], order='C')
+
+    return self._data
+
+  @property
+  def name(self) -> str:
+    return 'downsampled_' + self._srcImg.name.__str__()
+
+
+class DataImage(BaseImage):
+
+  _data: np.ndarray
+  _pngBytesIO: BytesIO
+
+  def __init__(self, data: np.ndarray):
+    self._data = data
+
+  @property
+  def data(self) -> np.ndarray:
+    return self._data
+
+  @property
+  def pngBytesIO(self) -> BytesIO:
+    if self._pngBytesIO is None:
+      self._pngBytesIO = BytesIO()
+      PILImage.fromarray(self.data).save(self._pngBytesIO, format="PNG")
+
+    return self._pngBytesIO
+
+
+# if __name__ == "__main__":
+#     img = Image()
+#     cr = 294
+#     cc = 484
+#     r = 73
 
 
 class ImageFolder:
 
     downsample: int = 2
+    images: List[BaseImage]
+    thumbnails: List[BaseImage]
+    dir_path: str
 
-    def __init__(self, dir_path: str, images: List[Image]):
+    def __init__(self, dir_path: str, images: List[BaseImage]):
         self.dir_path = dir_path
-        self.images = images
+        # self.images = images
+        self.thumbnails = [ThumbnailImage(img) for img in images]
+        self.images = [MiniFileImage(img) for img in images]
 
     @classmethod
     def from_gui_folder_selection(cls):
@@ -151,17 +290,22 @@ class ImageFolder:
         images = []
 
         for scan in scans:
-            fname = res + "/" + scan
-            print("opening: ", fname)
-            try:
-                scanData = io.imread(fname)
-            except:
-                print("Failed to open", fname)
-                continue
+            fname: str = res + "/" + scan
 
-            print("finished imread")
-            print("WARNING: IMAGES ARE BEING DOWNSIZED")
-            images.append(Image(scanData[:: cls.downsample, :: cls.downsample], scan))
+            if not fname.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+              ImgLogger.log(fname, " is not an image file. Ignoring")
+            else:
+              images.append(FileImage(fname))
+            # print("opening: ", fname)
+            # try:
+            #     scanData = io.imread(fname)
+            # except:
+            #     print("Failed to open", fname)
+            #     continue
+
+            # print("finished imread")
+            # print("WARNING: IMAGES ARE BEING DOWNSIZED")
+            # images.append(Image(scanData[:: cls.downsample, :: cls.downsample], scan))
             # scanThumb = transform.resize(scanData, (scanData.shape[0] // 10, scanData.shape[1] // 10), anti_aliasing=True)
             # scanThumb = Image(np.asarray(scanData[::8, ::8], order='C'))
             # thumbnails.append({
@@ -171,19 +315,54 @@ class ImageFolder:
 
         return cls(res, images)
 
-    def get_thumbnails(self):
-        return [
-            {
-                "fileName": img.fname,
-                "img": base64.b64encode(
-                    Image(np.asarray(img.data[::8, ::8], order="C")).to_png_bytes()
-                ).decode("ascii"),
-            }
-            for img in self.images
-        ]
+    # def register_with_manager(self, imgMan: 'ImageDataManager'):
+    #   for img in self.images:
+    #     vfn = imgMan.ensure_image_stored(img)
+    #     # img.virtualFileName = vfn
+    #   for tn in self.thumbnails:
+    #     vfn = imgMan.ensure_image_stored(tn)
+        # tn.virtualFileName = vfn
 
-    def get_image_with_fname(self, fname: str) -> Image:
+    def register_images_on_session(self, session: 'Session'):
+      for img in self.images:
+        session.nameToImage[img.name] = img
+      for img in self.thumbnails:
+        session.nameToImage[img.name] = img
+
+    # def get_raw_thumbnails(self):
+      # return [
+      #   Image(np.asarray(img.data[::8, ::8], order="C"))
+      #   for img in self.images
+      # ]
+      # return [ThumbnailImage(img) for img in self.images]
+
+    # def get_thumbnails(self):
+    #     return [
+    #         {
+    #             "fileName": img.fname,
+    #             "img": base64.b64encode(
+    #                 Image(np.asarray(img.data[::8, ::8], order="C")).to_png_bytes()
+    #             ).decode("ascii"),
+    #         }
+    #         for img in self.images
+    #     ]
+
+    def get_image_with_fname(self, fname: str) -> BaseImage:
         return [i for i in self.images if i.fname == fname][0]
+
+    def get_ScanFolder_msg(self) -> ScanFolder:
+
+        sf = ScanFolder()
+
+        for img, tn in zip(self.images, self.thumbnails):
+          fi = FolderImage()
+          fi.file_name = img.name
+          fi.thumbnail_img_v_f_n = tn.name
+
+          sf.folder_images.append(fi)
+
+        return sf
+
 
 
 class BlotchCircle:
@@ -192,7 +371,7 @@ class BlotchCircle:
     centerRow: float
     centerCol: float
     radius: float
-    context: Image
+    context: BaseImage
     pickStats: PickStats
 
     def __init__(
@@ -201,7 +380,7 @@ class BlotchCircle:
         centerRow: float,
         centerCol: float,
         radius: float,
-        context: Image,
+        context: BaseImage,
         pickStats: PickStats,
     ):
         self.id = id
@@ -213,7 +392,7 @@ class BlotchCircle:
 
     @classmethod
     def from_selected_circle(
-        cls, id: int, centerRow: float, centerCol: float, radius: float, image: Image
+        cls, id: int, centerRow: float, centerCol: float, radius: float, image: BaseImage
     ):
 
         context = image.get_circle_context(centerRow, centerCol, radius)
@@ -231,18 +410,18 @@ class BlotchCircle:
     def get_clipboard_str(self):
       pc = self.pickStats
       return '\t'.join(
-        [pc.mu_r ,pc.mu_g, pc.mu_b, pc.perc_r, pc.perc_g, pc.perc_b, pc.sigma_r, pc.sigma_g, pc.sigma_b]
+        str(x) for x in [pc.mu_r ,pc.mu_g, pc.mu_b, pc.perc_r, pc.perc_g, pc.perc_b, pc.sigma_r, pc.sigma_g, pc.sigma_b]
       )
 
 
 class ImageSession:
 
-    image: Image
+    image: BaseImage
 
     blotchCircles: List[BlotchCircle]
     nextBlotchId: int
 
-    def __init__(self, image: Image) -> None:
+    def __init__(self, image: BaseImage) -> None:
         self.image = image
 
         self.blotchCircles = []
@@ -273,14 +452,88 @@ class ImageSession:
 
       return cc
 
+    def get_ActiveImage_msg(self) -> ActiveImage:
+
+      ai = ActiveImage()
+      ai.file_name = self.image.name
+      ai.img_data_v_f_n = self.image.name
+      ai.read_blotches = []
+
+      return ai
+
+# class ImageDataManager:
+
+#   _imagesByName: Dict[str, BaseImage]
+
+#   def __init__(self) -> None:
+#       super().__init__()
+
+#       self._images = {}
+#       self._image_to_vfn = {}
+
+#   def ensure_image_stored(self, img: BaseImage) -> str:
+
+#     if img in self._image_to_vfn:
+#       return self._image_to_vfn[img]
+
+#     # virtualFile = BytesIO()
+#     # PILImage.fromarray(img.data).save(virtualFile, format="PNG")
+
+#     vfn = uuid.uuid1().__str__() + ".png"
+#     self._images[vfn] = img
+#     self._image_to_vfn[img] = vfn
+#     return vfn
+
+#   def get_img(self, vfn: str) -> BytesIO:
+#     if vfn not in self._images:
+#       ImgLogger.log('Error: requested vfn {} not recognized'.format(vfn))
+#       return BytesIO()
+#     return self._images[vfn].pngBytesIO
+
 
 class Session:
 
     imgFolder: ImageFolder
     currImgSession: ImageSession
+    # imgDataManager: ImageDataManager
+    nameToImage: Dict[str, BaseImage]
+    currSelectedImgIdx: int
 
     def __init__(self) -> None:
-        pass
+        self.imgFolder = None
+        self.currImgSession = None
+        self.currSelectedImgIdx = 0
+        self.nameToImage = {}
 
-    def set_imgFolder(imgFolder: ImageFolder):
-        pass
+    def set_imgFolder(self, imgFolder: ImageFolder):
+        self.imgFolder = imgFolder
+        # todo: delete old img folder
+
+    def set_currImgSession(self, imgSess: ImageSession):
+      self.currImgSession = imgSess
+
+    def get_UIState_msg(self) -> UIState:
+      uiState = UIState()
+      uiState.open_folder = self.imgFolder.get_ScanFolder_msg()
+      uiState.selected_folder_img_idx = self.currSelectedImgIdx
+      uiState.active_image = self.currImgSession.get_ActiveImage_msg()
+      uiState.clipboard_content = self.currImgSession.get_clipboard_content_msg()
+
+      ImgLogger.log('Created UIState:', str(uiState))
+
+      return uiState
+
+    def get_image_by_name(self, name: str) -> BaseImage:
+      if name not in self.nameToImage:
+        ImgLogger.log('Error: requested image name {} not recognized'.format(name))
+        return None
+      return self.nameToImage[name]
+
+    def get_image_data_by_name(self, name: str) -> BytesIO:
+      if name not in self.nameToImage:
+        ImgLogger.log('Error: requested image name {} not recognized'.format(name))
+        return BytesIO()
+
+      return self.nameToImage[name].pngBytesIO
+
+

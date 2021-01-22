@@ -1,6 +1,6 @@
 from asyncio.tasks import sleep
 # from http.server import HTTPServer, BaseHTTPRequestHandler
-from flask import Flask, request
+from flask import Flask, request, send_file
 import urllib.parse
 from io import BytesIO
 import os
@@ -25,14 +25,12 @@ import pyperclip
 from skimage import io, transform
 import numpy as np
 
-from sotcat_backend.img import Session
-
 # ide likes .img imports, python does not
 if False is True:
-    from .img import Image, ImageFolder
+    from .img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger
     from .protobuf_py.types import *
 else:
-    from img import Image, ImageFolder
+    from img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger
     from protobuf_py.types import *
 
 
@@ -44,6 +42,8 @@ def log(*args):
 
     print('[Log]', msg)
     nodeSendQ.put(msg)
+
+ImgLogger.log = log
 
 class WSForwardLogHandler(logging.StreamHandler):
 
@@ -127,18 +127,6 @@ handler = WSForwardLogHandler()
 handler.setLevel(logging.INFO)
 app.logger.addHandler(handler)
 
-@app.route('/select_scan')
-def do_get_selected_scan():
-    fname = request.args.get('fname')
-    log('Processing get for file:', fname)
-
-    # global imageFolder, colours
-
-    # colours = []
-
-    global session
-
-    return {'imgData': session.imgFolder.get_image_with_fname(fname).to_b64_png()}
 
 @app.route('/open_folder')
 def do_open_folder():
@@ -149,11 +137,38 @@ def do_open_folder():
 
     global session
     session.set_imgFolder(ImageFolder.from_gui_folder_selection())
+    session.imgFolder.register_images_on_session(session)
+    session.set_currImgSession(ImageSession(session.imgFolder.images[0]))
 
-    return {
-        'hasImages': len(session.imgFolder.images) > 0,
-        'thumbnails': session.imgFolder.get_thumbnails()
-    }
+    uiState = session.get_UIState_msg()
+
+    return uiState.SerializeToString()
+
+    # return {
+    #     'hasImages': len(session.imgFolder.images) > 0,
+    #     'thumbnails': session.imgFolder.get_thumbnails()
+    # }
+
+@app.route('/select_scan')
+def do_get_selected_scan():
+    fname = request.args.get('fname')
+    idx = int(request.args.get('selectedIdx'))
+    log('Processing get for file:', fname)
+
+    # global imageFolder, colours
+
+    # colours = []
+
+    global session
+
+    scanImg = session.get_image_by_name(fname)
+    imgSess = ImageSession(scanImg)
+    session.set_currImgSession(imgSess)
+    session.currSelectedImgIdx = idx
+
+    return session.get_UIState_msg().SerializeToString()
+
+    # return {'imgData': session.currImgSession.image.to_b64_png()}
 
 @app.route('/new_circle', methods=['POST'])
 def do_new_circle():
@@ -210,7 +225,7 @@ def do_new_circle():
 
     return {
         "circContext": img64,
-        "meanColour": [int(x) for x in colour],
+        "meanColour": "",
         "colourCompare": compare64,
         "clipboardContent": imgSess.get_clipboard_content_msg().SerializeToString(),
     }
@@ -223,6 +238,17 @@ def do_new_circle():
     # resp.write().encode('utf-8'))
     # return resp
 
+@app.route('/image_bytes/<path:vfn>')
+def serve_image_bytes(vfn):
+  log('Client requested image with vfn: ', vfn)
+
+  global session
+  # bio = session.imgDataManager.get_img(vfn)
+  bio = session.get_image_data_by_name(vfn)
+  bio.seek(0)
+  bioCopy = BytesIO(bio.getvalue())
+
+  return send_file(bioCopy, mimetype='image/png', cache_timeout=60*60*24)
 
 
 
