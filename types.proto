@@ -22,3 +22,36 @@ message PickedCircle {
   double radius = 3;
   string imgFileName = 4;
 }
+
+// an image in the currently selected folder
+message FolderImage {
+  string fileName = 1;
+  string thumbnailImgVFN = 2;
+}
+
+// the currently selected folder
+message ScanFolder {
+  repeated FolderImage folderImages = 1;
+}
+
+message ReadBlotch {
+  PickedCircle circle = 1;
+  PickStats stats = 2;
+  string contextVFN = 3;
+  string compareVFN = 4;
+}
+
+message ActiveImage {
+  string fileName = 1;
+  string imgDataVFN = 2;
+  repeated ReadBlotch readBlotches = 3;
+}
+
+message UIState {
+  ScanFolder openFolder = 1;
+  int32 selectedFolderImgIdx = 2;
+  ActiveImage activeImage = 3;
+  ClipboardContent clipboardContent = 4;
+}
+
+
