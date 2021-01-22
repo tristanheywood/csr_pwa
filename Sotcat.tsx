@@ -1,8 +1,42 @@
 import React from 'react';
-import { PickedCircle, ClipboardContent } from './protobuf_js/types_pb'
+import { PickedCircle, ClipboardContent, PickStats, UIState, FolderImage } from './protobuf_js/types_pb'
+
+class SotcatContainer extends React.Component<{}, {uiState: UIState}> {
+
+  constructor(props: {}) {
+    super(props)
+    this.state = {
+      uiState: new UIState()
+    }
+  }
+
+  render() {
+    return (
+      <Sotcat
+        uiState = {this.state.uiState}
+        request = {this.do_request.bind(this)}
+        baseURL = {'http://localhost:8000'}
+      />
+    )
+  }
+
+  do_request(url: string) {
+    fetch(url).then((res: Response) => {
+      console.log(res);
+      return res.arrayBuffer()
+    }).then((buff: ArrayBuffer) => {
+      let uiState = UIState.deserializeBinary(buff as Uint8Array);
+      this.setState({
+        uiState: uiState
+      });
+    })
+  }
+}
 
 type SotcatProps = {
-
+  uiState: UIState,
+  request: (url: string) => void,
+  baseURL: string,
 }
 
 type SotcatState = {
@@ -85,37 +119,41 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
         // backgroundColor: "rgba(252, 210, 207, 0.8)"
         backgroundColor: "dimgray",
       }}>
+        {/* <img src="http://localhost:8000/image_bytes/test_uuid.png"/> */}
         <ScanViewer
-          onScanSelected={(fname: string) => {
+          // onScanSelected={(fname: string) => {
 
-            this.setState({
-              selectedScanFname: fname,
-              drops: [],
-              clipboardContent: new ClipboardContent(),
-            })
+          //   this.setState({
+          //     selectedScanFname: fname,
+          //     drops: [],
+          //     clipboardContent: new ClipboardContent(),
+          //   })
 
-            let url = new URL('http://localhost:8000/select_scan')
-            url.search = new URLSearchParams({
-              fname: fname,
-            }).toString();
+          //   let url = new URL('http://localhost:8000/select_scan')
+          //   url.search = new URLSearchParams({
+          //     fname: fname,
+          //   }).toString();
 
-            fetch(url.toString())
-              .then(res => res.json())
-              .then((result) => {
-                console.log(result)
+          //   fetch(url.toString())
+          //     .then(res => res.json())
+          //     .then((result) => {
+          //       console.log(result)
 
-                let img = new Image();
-                img.src = `data:image/png;base64,${result.imgData}`;
-                img.onload = () => {
-                  this.setState({
-                    img: img,
-                  }, () => {
-                    this.canvasRef.current!.getContext("2d")!.drawImage(img, 0, 0, img.width * this.imgScale, img.height * this.imgScale);
-                  })
-                }
-              })
+          //       let img = new Image();
+          //       img.src = `data:image/png;base64,${result.imgData}`;
+          //       img.onload = () => {
+          //         this.setState({
+          //           img: img,
+          //         }, () => {
+          //           this.canvasRef.current!.getContext("2d")!.drawImage(img, 0, 0, img.width * this.imgScale, img.height * this.imgScale);
+          //         })
+          //       }
+          //     })
 
-          }}
+          // }}
+          uiState = {this.props.uiState}
+          request = {this.props.request}
+          baseURL = {this.props.baseURL}
         />
         <div
           style={{
@@ -123,16 +161,12 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
             flexDirection: "row",
           }}
         >
-          {this.state.img ? (
             <canvas
               id="canvas"
-              width={(this.state.img && this.state.img!.width * this.imgScale) || "1600"}
-              height={(this.state.img && this.state.img!.height * this.imgScale) || "1000"}
+              // width={(this.state.img && this.state.img!.width * this.imgScale) || "1600"}
+              // height={(this.state.img && this.state.img!.height * this.imgScale) || "1000"}
               // width = "1600"
               // height = "1000"
-              style={{
-                border: "1px solid red"
-              }}
               ref={this.canvasRef}
               onMouseDown={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
                 let canvas: HTMLCanvasElement = event.target as HTMLCanvasElement;
@@ -179,14 +213,20 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
                   ctx.drawImage(this.state.img!, 0, 0, this.state.img!.width * this.imgScale, this.state.img!.height * this.imgScale);
                   this.drawSelection(ctx, this.circleCenter!, radius);
                 }
-              }}
-            ></canvas>
-          ) : ""}
+              }
+            }
+            style = {{
+              backgroundImage: this.props.baseURL + '/image_bytes/' + this.props.uiState.getActiveimage()?.getImgdatavfn(),
+              border: "1px solid red"
+            }}
+            >
+              {/* <img src = {this.props.baseURL + '/image_bytes/' + this.props.uiState.getActiveimage()?.getImgdatavfn()}/> */}
+            </canvas>
                   <div style={{
           display: "flex",
         }}>
           <ClipboardView
-            text={this.state.clipboardContent}
+            content={this.state.clipboardContent}
           />
         </div>
         </div>
@@ -197,6 +237,16 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
         </div>
       </div>
     )
+  }
+
+  componentDidUpdate() {
+    let img = new Image();
+    img.src = this.props.baseURL + '/image_bytes/' + this.props.uiState.getActiveimage()?.getImgdatavfn();
+    img.onload = () => {
+      this.canvasRef.current!.width = img.width;
+      this.canvasRef.current!.height = img.height;
+      this.canvasRef.current!.getContext('2d')!.drawImage(img, 0, 0);
+    }
   }
 
   drawSelection(ctx: CanvasRenderingContext2D, centerXY: Point, radius: number) {
@@ -304,7 +354,7 @@ class Drop extends React.Component<DropProps, DropState> {
   }
 }
 
-class ClipboardView extends React.Component<{ text: string }, {}> {
+class ClipboardView extends React.Component<{ content: ClipboardContent }, {}> {
 
   thStyle = {textAlign: "center",  width: 40,};
   trStyle = {
@@ -312,15 +362,15 @@ class ClipboardView extends React.Component<{ text: string }, {}> {
   };
 
   render() {
-    console.log(this.props.text.split("\n").map(row => {
-      <tr>
-        {row.split("\t").map(elt => {
-          <td>
-            {elt}
-          </td>
-        })}
-      </tr>
-    }));
+    // console.log(this.props.content.getRowsList().map(row => {
+    //   <tr>
+    //     {row.split("\t").map(elt => {
+    //       <td>
+    //         {elt}
+    //       </td>
+    //     })}
+    //   </tr>
+    // }));
     return (
       <table style = {{
         boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
@@ -347,21 +397,21 @@ class ClipboardView extends React.Component<{ text: string }, {}> {
           </tr>
         </thead>
         <tbody>
-          {this.props.text.split("\n").map(row =>
+          {this.props.content.getRowsList().map((row: PickStats) =>
             <tr style = {this.trStyle}>
               {[
                 <td style = {{
                   borderRight: "1px solid rgba(0, 0, 0, 0.2)",
                 }}>
                   <div style = {{
-                    backgroundColor: `rgb(${row.split("\t").join(",")})`,
+                    backgroundColor: `rgb(${[row.getMur(), row.getMub(), row.getMug()].join(",")})`,
                     width: 20,
                     marginLeft: 10,
                     height: "100%",
                     borderRadius: 2,
                   }}/>
                 </td>
-              ].concat(row.split("\t").map((elt, idx) =>
+              ].concat([row.getMur(), row.getMug(), row.getMub(), row.getPercr(), row.getPercg(), row.getPercb(), row.getSigmar(), row.getSigmag(), row.getSigmab()].map((elt, idx) =>
                 <td style={{
                   textAlign: "center",
                   borderRight: idx == 2 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
@@ -378,18 +428,12 @@ class ClipboardView extends React.Component<{ text: string }, {}> {
 }
 
 type ScanViewerProps = {
-  onScanSelected: (fname: string) => void;
+  uiState: UIState;
+  request: (url: string) => void;
+  baseURL: string;
 }
 
-type ScanViewerState = {
-  thumbnails: Array<{
-    fileName: string,
-    img64: string,
-  }>,
-  selectedIdx: number,
-}
-
-class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
+class ScanViewer extends React.Component<ScanViewerProps, {}> {
 
   selectedTNRef: React.RefObject<HTMLImageElement>;
   scansDivRef: React.RefObject<HTMLDivElement>;
@@ -399,11 +443,6 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
 
     this.selectedTNRef = React.createRef();
     this.scansDivRef = React.createRef();
-
-    this.state = {
-      thumbnails: [],
-      selectedIdx: -1,
-    }
   }
 
   render() {
@@ -425,27 +464,28 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
               marginRight: 3,
             }}
             onClick={() => {
-              fetch('http://localhost:8000/open_folder')
-                .then(res => res.json())
-                .then(res => {
-                  console.log(res)
+              this.props.request(this.props.baseURL + '/open_folder');
+              // fetch('http://localhost:8000/open_folder')
+                // .then(res => res.json())
+                // .then(res => {
+                //   console.log(res)
 
-                  if (!res.hasImages) {
-                    alert("Selected Folder is Empty");
-                    return;
-                  }
+                //   if (!res.hasImages) {
+                //     alert("Selected Folder is Empty");
+                //     return;
+                //   }
 
-                  res.thumbnails.map((tn: { fileName: string, img: string }) => {
-                    this.setState(prevState => ({
-                      thumbnails: [...prevState.thumbnails, {
-                        fileName: tn.fileName,
-                        img64: tn.img,
-                      }]
-                    }), () => {
-                      this._on_selection(0);
-                    })
-                  });
-                })
+                //   res.thumbnails.map((tn: { fileName: string, img: string }) => {
+                //     this.setState(prevState => ({
+                //       thumbnails: [...prevState.thumbnails, {
+                //         fileName: tn.fileName,
+                //         img64: tn.img,
+                //       }]
+                //     }), () => {
+                //       this._on_selection(0);
+                //     })
+                //   });
+                // })
             }}
           >Open Folder</button>
         </div>
@@ -457,7 +497,7 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
               marginRight: 3,
             }}
             onClick={() => {
-              this._on_selection(this.state.selectedIdx - 1);
+              this._on_selection(this.props.uiState.getSelectedfolderimgidx() - 1);
             }}
           >◀</button>
         </div>
@@ -469,7 +509,7 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
               marginRight: 3,
             }}
             onClick={() => {
-              this._on_selection(this.state.selectedIdx + 1);
+              this._on_selection(this.props.uiState.getSelectedfolderimgidx() + 1);
             }}
           >▶</button>
         </div>
@@ -480,7 +520,7 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
           }}
           ref={this.scansDivRef}
         >
-          {this.state.thumbnails.map((tn, i) => <img
+          {/* {this.state.thumbnails.map((tn, i) => <img
             key={i}
             src={`data:image/png;base64,${tn.img64}`}
             width="150"
@@ -496,25 +536,56 @@ class ScanViewer extends React.Component<ScanViewerProps, ScanViewerState> {
             onClick={() => {
               this._on_selection(i);
             }}
-          />)}
+          />)} */}
+          {this.props.uiState.getOpenfolder()?.getFolderimagesList().map((fi: FolderImage, idx) => (
+            <img
+              key={idx}
+              src={this.props.baseURL + "/image_bytes/" + fi.getThumbnailimgvfn()}
+              width="150"
+              style={idx == this.props.uiState.getSelectedfolderimgidx() ? {
+                border: "3px solid rgb(112, 167, 255)",
+                borderRadius: 5,
+                boxShadow: "0 4px 8px 0 rgba(0, 0, 50, 0.4), 0 6px 20px 0 rgba(0, 0, 50, 0.4)",
+                marginRight: 3,
+              } : {
+                marginRight: 3,
+              }}
+              ref={idx == this.props.uiState.getSelectedfolderimgidx() ? this.selectedTNRef : undefined}
+              onClick={() => {
+                this._on_selection(idx);
+            }}
+            />
+          ))}
         </div>
       </div>
     )
   }
 
+  componentDidUpdate() {
+    let selectedPos = this.selectedTNRef.current!.offsetLeft;
+    this.scansDivRef.current!.scrollLeft = selectedPos - 400;
+  }
+
   _on_selection(selectedIdx: number) {
-    if (selectedIdx == this.state.selectedIdx || selectedIdx < 0 || selectedIdx >= this.state.thumbnails.length) {
+    if (selectedIdx == this.props.uiState.getSelectedfolderimgidx() || selectedIdx < 0 || selectedIdx >= this.props.uiState.getOpenfolder()!.getFolderimagesList()!.length) {
       return;
     }
-    this.props.onScanSelected(this.state.thumbnails[selectedIdx].fileName);
-    this.setState({
-      selectedIdx: selectedIdx
-    }, () => {
-      let selectedPos = this.selectedTNRef.current!.offsetLeft;
-      console.log(selectedPos);
-      this.scansDivRef.current!.scrollLeft = selectedPos - 400;
-    })
+    let url = new URL('http://localhost:8000/select_scan')
+    url.search = new URLSearchParams({
+      fname: this.props.uiState.getOpenfolder()?.getFolderimagesList()[selectedIdx].getFilename()!,
+      selectedIdx: selectedIdx.toString(),
+    }).toString();
+    this.props.request(url.toString());
+
+    // this.props.onScanSelected(this.state.thumbnails[selectedIdx].fileName);
+    // this.setState({
+    //   selectedIdx: selectedIdx
+    // }, () => {
+    //   let selectedPos = this.selectedTNRef.current!.offsetLeft;
+    //   console.log(selectedPos);
+    //   this.scansDivRef.current!.scrollLeft = selectedPos - 400;
+    // })
   }
 }
 
-export default Sotcat;
+export default SotcatContainer;

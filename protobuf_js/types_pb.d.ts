@@ -109,3 +109,153 @@ export namespace PickedCircle {
   }
 }
 
+export class FolderImage extends jspb.Message {
+  getFilename(): string;
+  setFilename(value: string): void;
+
+  getThumbnailimgvfn(): string;
+  setThumbnailimgvfn(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): FolderImage.AsObject;
+  static toObject(includeInstance: boolean, msg: FolderImage): FolderImage.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: FolderImage, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): FolderImage;
+  static deserializeBinaryFromReader(message: FolderImage, reader: jspb.BinaryReader): FolderImage;
+}
+
+export namespace FolderImage {
+  export type AsObject = {
+    filename: string,
+    thumbnailimgvfn: string,
+  }
+}
+
+export class ScanFolder extends jspb.Message {
+  clearFolderimagesList(): void;
+  getFolderimagesList(): Array<FolderImage>;
+  setFolderimagesList(value: Array<FolderImage>): void;
+  addFolderimages(value?: FolderImage, index?: number): FolderImage;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ScanFolder.AsObject;
+  static toObject(includeInstance: boolean, msg: ScanFolder): ScanFolder.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ScanFolder, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ScanFolder;
+  static deserializeBinaryFromReader(message: ScanFolder, reader: jspb.BinaryReader): ScanFolder;
+}
+
+export namespace ScanFolder {
+  export type AsObject = {
+    folderimagesList: Array<FolderImage.AsObject>,
+  }
+}
+
+export class ReadBlotch extends jspb.Message {
+  hasCircle(): boolean;
+  clearCircle(): void;
+  getCircle(): PickedCircle | undefined;
+  setCircle(value?: PickedCircle): void;
+
+  hasStats(): boolean;
+  clearStats(): void;
+  getStats(): PickStats | undefined;
+  setStats(value?: PickStats): void;
+
+  getContextvfn(): string;
+  setContextvfn(value: string): void;
+
+  getComparevfn(): string;
+  setComparevfn(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ReadBlotch.AsObject;
+  static toObject(includeInstance: boolean, msg: ReadBlotch): ReadBlotch.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ReadBlotch, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ReadBlotch;
+  static deserializeBinaryFromReader(message: ReadBlotch, reader: jspb.BinaryReader): ReadBlotch;
+}
+
+export namespace ReadBlotch {
+  export type AsObject = {
+    circle?: PickedCircle.AsObject,
+    stats?: PickStats.AsObject,
+    contextvfn: string,
+    comparevfn: string,
+  }
+}
+
+export class ActiveImage extends jspb.Message {
+  getFilename(): string;
+  setFilename(value: string): void;
+
+  getImgdatavfn(): string;
+  setImgdatavfn(value: string): void;
+
+  clearReadblotchesList(): void;
+  getReadblotchesList(): Array<ReadBlotch>;
+  setReadblotchesList(value: Array<ReadBlotch>): void;
+  addReadblotches(value?: ReadBlotch, index?: number): ReadBlotch;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ActiveImage.AsObject;
+  static toObject(includeInstance: boolean, msg: ActiveImage): ActiveImage.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ActiveImage, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ActiveImage;
+  static deserializeBinaryFromReader(message: ActiveImage, reader: jspb.BinaryReader): ActiveImage;
+}
+
+export namespace ActiveImage {
+  export type AsObject = {
+    filename: string,
+    imgdatavfn: string,
+    readblotchesList: Array<ReadBlotch.AsObject>,
+  }
+}
+
+export class UIState extends jspb.Message {
+  hasOpenfolder(): boolean;
+  clearOpenfolder(): void;
+  getOpenfolder(): ScanFolder | undefined;
+  setOpenfolder(value?: ScanFolder): void;
+
+  getSelectedfolderimgidx(): number;
+  setSelectedfolderimgidx(value: number): void;
+
+  hasActiveimage(): boolean;
+  clearActiveimage(): void;
+  getActiveimage(): ActiveImage | undefined;
+  setActiveimage(value?: ActiveImage): void;
+
+  hasClipboardcontent(): boolean;
+  clearClipboardcontent(): void;
+  getClipboardcontent(): ClipboardContent | undefined;
+  setClipboardcontent(value?: ClipboardContent): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UIState.AsObject;
+  static toObject(includeInstance: boolean, msg: UIState): UIState.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: UIState, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UIState;
+  static deserializeBinaryFromReader(message: UIState, reader: jspb.BinaryReader): UIState;
+}
+
+export namespace UIState {
+  export type AsObject = {
+    openfolder?: ScanFolder.AsObject,
+    selectedfolderimgidx: number,
+    activeimage?: ActiveImage.AsObject,
+    clipboardcontent?: ClipboardContent.AsObject,
+  }
+}
+
