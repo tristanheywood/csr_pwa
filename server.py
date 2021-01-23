@@ -12,6 +12,7 @@ import tkinter.filedialog
 import ctypes
 import asyncio
 from flask.globals import session
+from numpy.core.arrayprint import BoolFormat
 import websockets
 import queue
 import threading
@@ -27,10 +28,10 @@ import numpy as np
 
 # ide likes .img imports, python does not
 if False is True:
-    from .img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger
+    from .img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
     from .protobuf_py.types import *
 else:
-    from img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger
+    from img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
     from protobuf_py.types import *
 
 
@@ -189,26 +190,30 @@ def do_new_circle():
     # image = imageFolder.get_image_with_fname(pc.img_file_name)
 
     global session
-    image = session.imgFolder.get_image_with_fname(pc.img_file_name)
+    # image = session.imgFolder.get_image_with_fname(pc.img_file_name)
+    image: BaseImage = session.get_image_by_name(pc.img_file_name)
     imgSess = session.currImgSession
 
     # self.image.add_circle(int(body['center']['y']), int(body['center']['x']), int(body['radius']))
     # self.image.show()
-    cr = int(pc.center_y)
-    cc = int(pc.center_x)
+    cr = int(pc.center_row)
+    cc = int(pc.center_col)
     r = int(pc.radius)
 
-    im = image.get_circle_context(int(pc.center_y), int(
-        pc.center_x), int(pc.radius))
+    # im = image.get_circle_context(int(pc.center_y), int(
+    #     pc.center_x), int(pc.radius))
 
-    contextPNG = im.to_png_bytes()
-    img64 = base64.b64encode(contextPNG).decode('ascii')
+    # contextPNG = im.to_png_bytes()
+    # img64 = base64.b64encode(contextPNG).decode('ascii')
 
-    session.currImgSession.add_circle(cr, cc, r)
+    # session.currImgSession.add_circle(cr, cc, r)
 
-    # colour = image.get_circle_colour(cr, cc, r)
-    comparePNG = image.get_colour_display(cr, cc, r).to_png_bytes()
-    compare64 = base64.b64encode(comparePNG).decode('ascii')
+    # # colour = image.get_circle_colour(cr, cc, r)
+    # comparePNG = image.get_colour_display(cr, cc, r).to_png_bytes()
+    # compare64 = base64.b64encode(comparePNG).decode('ascii')
+
+    imgSess.add_circle(cr, cc, r)
+    imgSess.blotchCircles[-1].register_imgs_on_session(session)
 
     # global colours
     # colours.append([int(x) for x in colour])
@@ -223,12 +228,14 @@ def do_new_circle():
 
     pyperclip.copy(imgSess.get_clipboard_str())
 
-    return {
-        "circContext": img64,
-        "meanColour": "",
-        "colourCompare": compare64,
-        "clipboardContent": imgSess.get_clipboard_content_msg().SerializeToString(),
-    }
+    # return {
+    #     "circContext": img64,
+    #     "meanColour": "",
+    #     "colourCompare": compare64,
+    #     "clipboardContent": imgSess.get_clipboard_content_msg().SerializeToString(),
+    # }
+
+    return session.get_UIState_msg().SerializeToString()
 
     # import pdb; pdb.set_trace();
 

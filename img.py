@@ -42,6 +42,86 @@ class BaseImage(ABC):
   def name(self) -> str:
     raise NotImplementedError()
 
+  def add_circle(self, centerR, centerC, radius):
+      rr, cc = draw.circle_perimeter(centerR, centerC, radius)
+
+      self.data[rr, cc] = [255, 0, 0]
+
+  def get_circle_context(self, cr, cc, r, s=3):
+      newIm = np.copy(self.data)
+      row, col = draw.circle_perimeter(cr, cc, r)
+      newIm[row, col] = [255, 0, 0]
+
+      return DataImage(
+          newIm[
+              max(cr - s * r, 0) : min(cr + s * r, newIm.shape[0]),
+              max(cc - s * r, 0) : min(cc + s * r, newIm.shape[1]),
+              :,
+          ]
+      )
+
+  def get_circle_colour(self, cr, cc, r):
+      rows, cols = draw.disk((cr, cc), r)
+
+      # colour = np.mean(self.data[rows, cols], axis=(0, 1))
+      colour = np.mean(self.data[rows, cols], axis=0)
+
+      return colour
+
+  def get_circle_stats(self, cr, cc, r) -> PickStats:
+
+      rows, cols = draw.disk((cc, cr), r)
+
+      mu = np.mean(self.data[rows, cols], axis=0)
+      sigma = np.std(self.data[rows, cols], axis=0)
+
+      ps = PickStats()
+      ps.mu_r = mu[0]
+      ps.mu_g = mu[1]
+      ps.mu_b = mu[2]
+      ps.sigma_r = sigma[0]
+      ps.sigma_g = sigma[1]
+      ps.sigma_b = sigma[2]
+
+      totSum = np.sum(self.data[rows, cols])
+
+      ps.perc_r = np.sum(self.data[rows, cols][:, 0]) / totSum
+      ps.perc_g = np.sum(self.data[rows, cols][:, 1]) / totSum
+      ps.prec_b = np.sum(self.data[rows, cols][:, 2]) / totSum
+
+      return ps
+
+  def get_colour_display(self, cr, cc, r):
+      colour = self.get_circle_colour(cr, cc, r)
+
+      rows, cols = draw.disk((cr, cc), r)
+
+      im = np.full((2 * r, 2 * r, 3), 255, dtype=self.data.dtype)
+
+      irows, icols = draw.disk((r, r), r)
+
+      im[irows, icols] = self.data[rows, cols]
+
+      im[:, :r] = colour
+
+      return DataImage(im)
+
+  def to_png_bytes(self):
+
+      with BytesIO() as stream:
+
+          pIm = PILImage.fromarray(self.data)
+          pIm.save(stream, format="PNG")
+
+          return stream.getvalue()
+
+  def to_b64_png(self):
+      return base64.b64encode(self.to_png_bytes()).decode("ascii")
+
+  def show(self):
+      io.imshow(self.data)
+      io.show()
+
 
 class FileImage(BaseImage):
 
@@ -92,86 +172,6 @@ class FileImage(BaseImage):
     @classmethod
     def from_img_file(cls, fname):
         return cls(data=io.imread(fname))
-
-    def add_circle(self, centerR, centerC, radius):
-        rr, cc = draw.circle_perimeter(centerR, centerC, radius)
-
-        self.data[rr, cc] = [255, 0, 0]
-
-    def get_circle_context(self, cr, cc, r, s=3):
-        newIm = np.copy(self.data)
-        row, col = draw.circle_perimeter(cr, cc, r)
-        newIm[row, col] = [255, 0, 0]
-
-        return DataImage(
-            newIm[
-                max(cr - s * r, 0) : min(cr + s * r, newIm.shape[0]),
-                max(cc - s * r, 0) : min(cc + s * r, newIm.shape[1]),
-                :,
-            ]
-        )
-
-    def get_circle_colour(self, cr, cc, r):
-        rows, cols = draw.disk((cr, cc), r)
-
-        # colour = np.mean(self.data[rows, cols], axis=(0, 1))
-        colour = np.mean(self.data[rows, cols], axis=0)
-
-        return colour
-
-    def get_circle_stats(self, cr, cc, r) -> PickStats:
-
-        rows, cols = draw.disk((cc, cr), r)
-
-        mu = np.mean(self.data[rows, cols], axis=0)
-        sigma = np.std(self.data[rows, cols], axis=0)
-
-        ps = PickStats()
-        ps.mu_r = mu[0]
-        ps.mu_g = mu[1]
-        ps.mu_b = mu[2]
-        ps.sigma_r = sigma[0]
-        ps.sigma_g = sigma[1]
-        ps.sigma_b = sigma[2]
-
-        totSum = np.sum(self.data[rows, cols])
-
-        ps.perc_r = np.sum(self.data[rows, cols][:, 0]) / totSum
-        ps.perc_g = np.sum(self.data[rows, cols][:, 1]) / totSum
-        ps.prec_b = np.sum(self.data[rows, cols][:, 2]) / totSum
-
-        return ps
-
-    def get_colour_display(self, cr, cc, r):
-        colour = self.get_circle_colour(cr, cc, r)
-
-        rows, cols = draw.disk((cr, cc), r)
-
-        im = np.full((2 * r, 2 * r, 3), 255, dtype=self.data.dtype)
-
-        irows, icols = draw.disk((r, r), r)
-
-        im[irows, icols] = self.data[rows, cols]
-
-        im[:, :r] = colour
-
-        return DataImage(im)
-
-    def to_png_bytes(self):
-
-        with BytesIO() as stream:
-
-            pIm = PILImage.fromarray(self.data)
-            pIm.save(stream, format="PNG")
-
-            return stream.getvalue()
-
-    def to_b64_png(self):
-        return base64.b64encode(self.to_png_bytes()).decode("ascii")
-
-    def show(self):
-        io.imshow(self.data)
-        io.show()
 
 class ThumbnailImage(BaseImage):
 
@@ -235,21 +235,32 @@ class DataImage(BaseImage):
 
   _data: np.ndarray
   _pngBytesIO: BytesIO
+  _name: str
 
-  def __init__(self, data: np.ndarray):
+  def __init__(self, data: np.ndarray, name: str = None):
     self._data = data
+    self._pngBytesIO = None
+
+    if name is None:
+      name = uuid.uuid1().__str__() + '.png'
+
+    self._name = name
 
   @property
   def data(self) -> np.ndarray:
     return self._data
 
-  @property
-  def pngBytesIO(self) -> BytesIO:
-    if self._pngBytesIO is None:
-      self._pngBytesIO = BytesIO()
-      PILImage.fromarray(self.data).save(self._pngBytesIO, format="PNG")
+  # @property
+  # def pngBytesIO(self) -> BytesIO:
+  #   if self._pngBytesIO is None:
+  #     self._pngBytesIO = BytesIO()
+  #     PILImage.fromarray(self.data).save(self._pngBytesIO, format="PNG")
 
-    return self._pngBytesIO
+  #   return self._pngBytesIO
+
+  @property
+  def name(self) -> str:
+    return self._name
 
 
 # if __name__ == "__main__":
@@ -368,26 +379,32 @@ class ImageFolder:
 class BlotchCircle:
 
     id: int
+    srcImage: BaseImage
     centerRow: float
     centerCol: float
     radius: float
     context: BaseImage
+    compare: BaseImage
     pickStats: PickStats
 
     def __init__(
         self,
         id: int,
+        srcImage: BaseImage,
         centerRow: float,
         centerCol: float,
         radius: float,
         context: BaseImage,
+        compare: BaseImage,
         pickStats: PickStats,
     ):
         self.id = id
+        self.srcImage = srcImage
         self.centerRow = centerRow
         self.centerCol = centerCol
         self.radius = radius
         self.context = context
+        self.compare = compare
         self.pickStats = pickStats
 
     @classmethod
@@ -396,14 +413,17 @@ class BlotchCircle:
     ):
 
         context = image.get_circle_context(centerRow, centerCol, radius)
-        avgColour = image.get_circle_colour(centerRow, centerCol, radius)
+        compare = image.get_colour_display(centerRow, centerCol, radius)
+        # avgColour = image.get_circle_colour(centerRow, centerCol, radius)
 
         return cls(
             id,
+            image,
             centerRow,
             centerCol,
             radius,
             context,
+            compare,
             image.get_circle_stats(centerRow, centerCol, radius),
         )
 
@@ -412,6 +432,26 @@ class BlotchCircle:
       return '\t'.join(
         str(x) for x in [pc.mu_r ,pc.mu_g, pc.mu_b, pc.perc_r, pc.perc_g, pc.perc_b, pc.sigma_r, pc.sigma_g, pc.sigma_b]
       )
+
+    def register_imgs_on_session(self, session: 'Session'):
+      session.nameToImage[self.context.name] = self.context
+      session.nameToImage[self.compare.name] = self.compare
+
+    def get_ReadBlotch_msg(self) -> ReadBlotch:
+      rb = ReadBlotch()
+
+      pc = PickedCircle()
+      pc.center_row = self.centerRow
+      pc.center_col = self.centerCol
+      pc.radius = self.radius
+      pc.img_file_name = self.srcImage.name
+
+      rb.circle = pc
+      rb.stats = self.pickStats
+      rb.context_v_f_n = self.context.name
+      rb.compare_v_f_n = self.compare.name
+
+      return rb
 
 
 class ImageSession:
@@ -457,7 +497,8 @@ class ImageSession:
       ai = ActiveImage()
       ai.file_name = self.image.name
       ai.img_data_v_f_n = self.image.name
-      ai.read_blotches = []
+      ai.read_blotches = [b.get_ReadBlotch_msg() for b in self.blotchCircles]
+      ai.downsample_factor = 1 if type(self.image) is not MiniFileImage else self.image._downsampleFactor
 
       return ai
 

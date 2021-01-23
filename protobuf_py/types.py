@@ -27,8 +27,8 @@ class ClipboardContent(betterproto.Message):
 
 @dataclass
 class PickedCircle(betterproto.Message):
-    center_x: float = betterproto.double_field(1)
-    center_y: float = betterproto.double_field(2)
+    center_row: float = betterproto.double_field(1)
+    center_col: float = betterproto.double_field(2)
     radius: float = betterproto.double_field(3)
     img_file_name: str = betterproto.string_field(4)
 
@@ -61,6 +61,7 @@ class ActiveImage(betterproto.Message):
     file_name: str = betterproto.string_field(1)
     img_data_v_f_n: str = betterproto.string_field(2)
     read_blotches: List["ReadBlotch"] = betterproto.message_field(3)
+    downsample_factor: int = betterproto.int32_field(4)
 
 
 @dataclass
