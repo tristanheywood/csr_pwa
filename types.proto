@@ -17,8 +17,8 @@ message ClipboardContent {
 }
 
 message PickedCircle {
-  double centerX = 1;
-  double centerY = 2;
+  double centerRow = 1;
+  double centerCol = 2;
   double radius = 3;
   string imgFileName = 4;
 }
@@ -45,6 +45,7 @@ message ActiveImage {
   string fileName = 1;
   string imgDataVFN = 2;
   repeated ReadBlotch readBlotches = 3;
+  int32 downsampleFactor = 4;
 }
 
 message UIState {
