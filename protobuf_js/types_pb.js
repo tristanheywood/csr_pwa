@@ -750,8 +750,8 @@ proto.PickedCircle.prototype.toObject = function(opt_includeInstance) {
  */
 proto.PickedCircle.toObject = function(includeInstance, msg) {
   var f, obj = {
-    centerx: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
-    centery: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
+    centerrow: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
+    centercol: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
     radius: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
     imgfilename: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
@@ -792,11 +792,11 @@ proto.PickedCircle.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {number} */ (reader.readDouble());
-      msg.setCenterx(value);
+      msg.setCenterrow(value);
       break;
     case 2:
       var value = /** @type {number} */ (reader.readDouble());
-      msg.setCentery(value);
+      msg.setCentercol(value);
       break;
     case 3:
       var value = /** @type {number} */ (reader.readDouble());
@@ -835,14 +835,14 @@ proto.PickedCircle.prototype.serializeBinary = function() {
  */
 proto.PickedCircle.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getCenterx();
+  f = message.getCenterrow();
   if (f !== 0.0) {
     writer.writeDouble(
       1,
       f
     );
   }
-  f = message.getCentery();
+  f = message.getCentercol();
   if (f !== 0.0) {
     writer.writeDouble(
       2,
@@ -867,10 +867,10 @@ proto.PickedCircle.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
- * optional double centerX = 1;
+ * optional double centerRow = 1;
  * @return {number}
  */
-proto.PickedCircle.prototype.getCenterx = function() {
+proto.PickedCircle.prototype.getCenterrow = function() {
   return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 1, 0.0));
 };
 
@@ -879,16 +879,16 @@ proto.PickedCircle.prototype.getCenterx = function() {
  * @param {number} value
  * @return {!proto.PickedCircle} returns this
  */
-proto.PickedCircle.prototype.setCenterx = function(value) {
+proto.PickedCircle.prototype.setCenterrow = function(value) {
   return jspb.Message.setProto3FloatField(this, 1, value);
 };
 
 
 /**
- * optional double centerY = 2;
+ * optional double centerCol = 2;
  * @return {number}
  */
-proto.PickedCircle.prototype.getCentery = function() {
+proto.PickedCircle.prototype.getCentercol = function() {
   return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 2, 0.0));
 };
 
@@ -897,7 +897,7 @@ proto.PickedCircle.prototype.getCentery = function() {
  * @param {number} value
  * @return {!proto.PickedCircle} returns this
  */
-proto.PickedCircle.prototype.setCentery = function(value) {
+proto.PickedCircle.prototype.setCentercol = function(value) {
   return jspb.Message.setProto3FloatField(this, 2, value);
 };
 
@@ -1562,7 +1562,8 @@ proto.ActiveImage.toObject = function(includeInstance, msg) {
     filename: jspb.Message.getFieldWithDefault(msg, 1, ""),
     imgdatavfn: jspb.Message.getFieldWithDefault(msg, 2, ""),
     readblotchesList: jspb.Message.toObjectList(msg.getReadblotchesList(),
-    proto.ReadBlotch.toObject, includeInstance)
+    proto.ReadBlotch.toObject, includeInstance),
+    downsamplefactor: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -1611,6 +1612,10 @@ proto.ActiveImage.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.ReadBlotch;
       reader.readMessage(value,proto.ReadBlotch.deserializeBinaryFromReader);
       msg.addReadblotches(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setDownsamplefactor(value);
       break;
     default:
       reader.skipField();
@@ -1661,6 +1666,13 @@ proto.ActiveImage.serializeBinaryToWriter = function(message, writer) {
       3,
       f,
       proto.ReadBlotch.serializeBinaryToWriter
+    );
+  }
+  f = message.getDownsamplefactor();
+  if (f !== 0) {
+    writer.writeInt32(
+      4,
+      f
     );
   }
 };
@@ -1737,6 +1749,24 @@ proto.ActiveImage.prototype.addReadblotches = function(opt_value, opt_index) {
  */
 proto.ActiveImage.prototype.clearReadblotchesList = function() {
   return this.setReadblotchesList([]);
+};
+
+
+/**
+ * optional int32 downsampleFactor = 4;
+ * @return {number}
+ */
+proto.ActiveImage.prototype.getDownsamplefactor = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.ActiveImage} returns this
+ */
+proto.ActiveImage.prototype.setDownsamplefactor = function(value) {
+  return jspb.Message.setProto3IntField(this, 4, value);
 };
 
 

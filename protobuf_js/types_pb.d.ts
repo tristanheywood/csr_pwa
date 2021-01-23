@@ -78,11 +78,11 @@ export namespace ClipboardContent {
 }
 
 export class PickedCircle extends jspb.Message {
-  getCenterx(): number;
-  setCenterx(value: number): void;
+  getCenterrow(): number;
+  setCenterrow(value: number): void;
 
-  getCentery(): number;
-  setCentery(value: number): void;
+  getCentercol(): number;
+  setCentercol(value: number): void;
 
   getRadius(): number;
   setRadius(value: number): void;
@@ -102,8 +102,8 @@ export class PickedCircle extends jspb.Message {
 
 export namespace PickedCircle {
   export type AsObject = {
-    centerx: number,
-    centery: number,
+    centerrow: number,
+    centercol: number,
     radius: number,
     imgfilename: string,
   }
@@ -203,6 +203,9 @@ export class ActiveImage extends jspb.Message {
   setReadblotchesList(value: Array<ReadBlotch>): void;
   addReadblotches(value?: ReadBlotch, index?: number): ReadBlotch;
 
+  getDownsamplefactor(): number;
+  setDownsamplefactor(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ActiveImage.AsObject;
   static toObject(includeInstance: boolean, msg: ActiveImage): ActiveImage.AsObject;
@@ -218,6 +221,7 @@ export namespace ActiveImage {
     filename: string,
     imgdatavfn: string,
     readblotchesList: Array<ReadBlotch.AsObject>,
+    downsamplefactor: number,
   }
 }
 

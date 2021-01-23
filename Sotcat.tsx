@@ -1,5 +1,5 @@
 import React from 'react';
-import { PickedCircle, ClipboardContent, PickStats, UIState, FolderImage } from './protobuf_js/types_pb'
+import { PickedCircle, ClipboardContent, PickStats, UIState, FolderImage, ActiveImage, ReadBlotch } from './protobuf_js/types_pb'
 
 class SotcatContainer extends React.Component<{}, {uiState: UIState}> {
 
@@ -20,8 +20,19 @@ class SotcatContainer extends React.Component<{}, {uiState: UIState}> {
     )
   }
 
-  do_request(url: string) {
-    fetch(url).then((res: Response) => {
+  do_request(url: string, body: any = undefined) {
+
+    let fetchProm;
+
+    if (body) {
+      fetchProm = fetch(url, {
+        method: 'POST',
+        body: body
+      });
+    } else {
+      fetchProm = fetch(url);
+    }
+    fetchProm.then((res: Response) => {
       console.log(res);
       return res.arrayBuffer()
     }).then((buff: ArrayBuffer) => {
@@ -35,14 +46,11 @@ class SotcatContainer extends React.Component<{}, {uiState: UIState}> {
 
 type SotcatProps = {
   uiState: UIState,
-  request: (url: string) => void,
+  request: (url: string, body?: any) => void,
   baseURL: string,
 }
 
 type SotcatState = {
-  imgData?: string,
-  img?: HTMLImageElement;
-  drops: Array<JSX.Element>,
   clipboardContent: ClipboardContent,
   selectedScanFname: string,
 }
@@ -57,23 +65,19 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
 
   amDrawingCircle: boolean;
   circleCenter?: Point;
-  imgScale: number;
   canvasRef: React.RefObject<HTMLCanvasElement>;
+  imgElement: HTMLImageElement;
 
   constructor(props: SotcatProps) {
     super(props);
     this.state = {
-      imgData: undefined,
-      drops: [],
-      img: undefined,
       clipboardContent: new ClipboardContent(),
       selectedScanFname: "",
     }
     this.amDrawingCircle = false;
     this.circleCenter = undefined;
-    this.imgScale = 0.7;
     this.canvasRef = React.createRef();
-
+    this.imgElement = new Image();
     console.log('Socat.constructor()')
 
   }
@@ -175,12 +179,14 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
                   this.amDrawingCircle = false;
                   // return;
 
+                  let imgScale = this.props.uiState.getActiveimage()?.getDownsamplefactor()!
+
                   this.postCircle(
                     {
-                      x: this.circleCenter!.x / this.imgScale,
-                      y: this.circleCenter!.y / this.imgScale,
+                      x: this.circleCenter!.x * imgScale,
+                      y: this.circleCenter!.y * imgScale,
                     },
-                    this.getRadius(this.circleCenter!, this.getMousePosOnCanvas(canvas, event)) / this.imgScale
+                    this.getRadius(this.circleCenter!, this.getMousePosOnCanvas(canvas, event)) / imgScale
                   );
                   return;
                 }
@@ -210,7 +216,8 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
                   let ctx = canvas.getContext("2d")!;
 
                   ctx.clearRect(0, 0, canvas.width, canvas.height);
-                  ctx.drawImage(this.state.img!, 0, 0, this.state.img!.width * this.imgScale, this.state.img!.height * this.imgScale);
+                  // ctx.drawImage(this.state.img!, 0, 0, this.state.img!.width * this.imgScale, this.state.img!.height * this.imgScale);
+                  ctx.drawImage(this.imgElement, 0, 0);
                   this.drawSelection(ctx, this.circleCenter!, radius);
                 }
               }
@@ -233,19 +240,23 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
         <div style={{
           display: "flex",
         }}>
-          {this.state.drops}
+          {/* {this.state.drops} */}
+          <BlotchCircleDisp
+            blotches = {this.props.uiState.getActiveimage()?.getReadblotchesList() || []}
+            baseURL = {this.props.baseURL}
+          />
         </div>
       </div>
     )
   }
 
   componentDidUpdate() {
-    let img = new Image();
-    img.src = this.props.baseURL + '/image_bytes/' + this.props.uiState.getActiveimage()?.getImgdatavfn();
-    img.onload = () => {
-      this.canvasRef.current!.width = img.width;
-      this.canvasRef.current!.height = img.height;
-      this.canvasRef.current!.getContext('2d')!.drawImage(img, 0, 0);
+    this.imgElement = new Image();
+    this.imgElement.src = this.props.baseURL + '/image_bytes/' + this.props.uiState.getActiveimage()?.getImgdatavfn();
+    this.imgElement.onload = () => {
+      this.canvasRef.current!.width = this.imgElement.width;
+      this.canvasRef.current!.height = this.imgElement.height;
+      this.canvasRef.current!.getContext('2d')!.drawImage(this.imgElement, 0, 0);
     }
   }
 
@@ -258,33 +269,35 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
   postCircle(center: { x: number, y: number }, radius: number) {
 
     let pc = new PickedCircle();
-    pc.setCenterx(center.x);
-    pc.setCentery(center.y);
+    pc.setCentercol(center.x);
+    pc.setCenterrow(center.y);
     pc.setRadius(radius);
-    pc.setImgfilename(this.state.selectedScanFname);
+    pc.setImgfilename(this.props.uiState.getActiveimage()?.getFilename()!);
 
     let msg = pc.serializeBinary();
 
-    fetch('http://localhost:8000/new_circle', {
-      method: 'POST',
-      // body: JSON.stringify({
-      //   center: center,
-      //   radius: radius,
-      //   fname: this.state.selectedScanFname,
-      // })
-      body: msg,
-    }).then(res => res.json())
-      .then((result) => {
-        console.log(result);
-        this.setState(prevState => ({
-          drops: [...prevState.drops, <Drop
-            contextPicB64={result.circContext}
-            colourComparePicB64={result.colourCompare}
-            key={this.state.drops.length}
-          />],
-          clipboardContent: ClipboardContent.deserializeBinary(result.clipboardContent),
-        }))
-      })
+    this.props.request(this.props.baseURL + '/new_circle', msg);
+
+    // fetch('http://localhost:8000/new_circle', {
+    //   method: 'POST',
+    //   // body: JSON.stringify({
+    //   //   center: center,
+    //   //   radius: radius,
+    //   //   fname: this.state.selectedScanFname,
+    //   // })
+    //   body: msg,
+    // }).then(res => res.json())
+    //   .then((result) => {
+    //     console.log(result);
+    //     this.setState(prevState => ({
+    //       drops: [...prevState.drops, <Drop
+    //         contextPicB64={result.circContext}
+    //         colourComparePicB64={result.colourCompare}
+    //         key={this.state.drops.length}
+    //       />],
+    //       clipboardContent: ClipboardContent.deserializeBinary(result.clipboardContent),
+    //     }))
+    //   })
   }
 
   drawCircle(ctx: CanvasRenderingContext2D, locXY: Point, radius: number, colour: string) {
@@ -316,8 +329,9 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
 // );
 
 type DropProps = {
-  contextPicB64: string,
-  colourComparePicB64: string,
+  contextVFN: string,
+  compareVFN: string,
+  baseURL: string,
 };
 
 type DropState = {
@@ -339,13 +353,15 @@ class Drop extends React.Component<DropProps, DropState> {
       }}>
         <div>
           <img
-            src={`data:image/png;base64,${this.props.contextPicB64}`}
+            // src={`data:image/png;base64,${this.props.contextPicB64}`}
+            src = {this.props.baseURL + '/image_bytes/' + this.props.contextVFN}
             width="150"
           />
         </div>
         <div>
           <img
-            src={`data:image/png;base64,${this.props.colourComparePicB64}`}
+            // src={`data:image/png;base64,${this.props.colourComparePicB64}`}
+            src = {this.props.baseURL + '/image_bytes/' + this.props.compareVFN}
             width="150"
           />
         </div>
@@ -586,6 +602,29 @@ class ScanViewer extends React.Component<ScanViewerProps, {}> {
     //   this.scansDivRef.current!.scrollLeft = selectedPos - 400;
     // })
   }
+}
+
+type BlotchCircleDispProps = {
+  blotches: Array<ReadBlotch>,
+  baseURL: string,
+}
+
+class BlotchCircleDisp extends React.Component<BlotchCircleDispProps, {}> {
+
+  render() {
+    return (
+      <div>
+        {this.props.blotches.map((rb: ReadBlotch) => {
+          return (<Drop
+            baseURL = {this.props.baseURL}
+            contextVFN = {rb.getContextvfn()}
+            compareVFN = {rb.getComparevfn()}
+          />)
+        })}
+      </div>
+    )
+  }
+
 }
 
 export default SotcatContainer;
