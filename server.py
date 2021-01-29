@@ -257,6 +257,16 @@ def serve_image_bytes(vfn):
 
   return send_file(bioCopy, mimetype='image/png', cache_timeout=60*60*24)
 
+@app.route('/remove_blotch/<blotchId>')
+def remove_blotch(blotchId):
+  log('Client requested removal of blotch ', blotchId)
+
+  global session
+  session.currImgSession.remove_blotch(int(blotchId))
+
+  pyperclip.copy(session.currImgSession.get_clipboard_str())
+
+  return session.get_UIState_msg().SerializeToString()
 
 
 # thread = threading.Thread(target = run_node_websocket, daemon=True)

@@ -478,6 +478,7 @@ class BlotchCircle:
       rb.stats = self.pickStats
       rb.context_v_f_n = self.context.name
       rb.compare_v_f_n = self.compare.name
+      rb.blotch_i_d = self.id
 
       return rb
 
@@ -503,7 +504,8 @@ class ImageSession:
         )
         self.nextBlotchId += 1
 
-    def remove_circle(self, id: int):
+    def remove_blotch(self, id: int):
+        # import pdb; pdb.set_trace()
         for idx, bc in enumerate(self.blotchCircles):
             if bc.id == id:
                 self.blotchCircles.pop(idx)
@@ -517,6 +519,7 @@ class ImageSession:
 
       for bc in self.blotchCircles:
         cc.rows.append(bc.pickStats)
+        cc.blotch_i_ds.append(bc.id)
 
       return cc
 

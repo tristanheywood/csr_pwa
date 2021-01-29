@@ -23,6 +23,7 @@ class PickStats(betterproto.Message):
 @dataclass
 class ClipboardContent(betterproto.Message):
     rows: List["PickStats"] = betterproto.message_field(1)
+    blotch_i_ds: List[int] = betterproto.int32_field(2)
 
 
 @dataclass
@@ -54,6 +55,7 @@ class ReadBlotch(betterproto.Message):
     stats: "PickStats" = betterproto.message_field(2)
     context_v_f_n: str = betterproto.string_field(3)
     compare_v_f_n: str = betterproto.string_field(4)
+    blotch_i_d: int = betterproto.int32_field(5)
 
 
 @dataclass
