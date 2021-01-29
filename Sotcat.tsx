@@ -1,6 +1,8 @@
 import React from 'react';
 import { PickedCircle, ClipboardContent, PickStats, UIState, FolderImage, ActiveImage, ReadBlotch } from './protobuf_js/types_pb'
 
+let BOX_SHADOW_STR: string = "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)";
+
 class SotcatContainer extends React.Component<{}, {uiState: UIState}> {
 
   constructor(props: {}) {
@@ -37,6 +39,7 @@ class SotcatContainer extends React.Component<{}, {uiState: UIState}> {
       return res.arrayBuffer()
     }).then((buff: ArrayBuffer) => {
       let uiState = UIState.deserializeBinary(buff as Uint8Array);
+      console.log(uiState.toObject());
       this.setState({
         uiState: uiState
       });
@@ -119,42 +122,12 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
     return (
       <div style={{
         // border: "1px solid black",
-        boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+        boxShadow: BOX_SHADOW_STR,
         // backgroundColor: "rgba(252, 210, 207, 0.8)"
         backgroundColor: "dimgray",
+        borderRadius: 5,
       }}>
-        {/* <img src="http://localhost:8000/image_bytes/test_uuid.png"/> */}
         <ScanViewer
-          // onScanSelected={(fname: string) => {
-
-          //   this.setState({
-          //     selectedScanFname: fname,
-          //     drops: [],
-          //     clipboardContent: new ClipboardContent(),
-          //   })
-
-          //   let url = new URL('http://localhost:8000/select_scan')
-          //   url.search = new URLSearchParams({
-          //     fname: fname,
-          //   }).toString();
-
-          //   fetch(url.toString())
-          //     .then(res => res.json())
-          //     .then((result) => {
-          //       console.log(result)
-
-          //       let img = new Image();
-          //       img.src = `data:image/png;base64,${result.imgData}`;
-          //       img.onload = () => {
-          //         this.setState({
-          //           img: img,
-          //         }, () => {
-          //           this.canvasRef.current!.getContext("2d")!.drawImage(img, 0, 0, img.width * this.imgScale, img.height * this.imgScale);
-          //         })
-          //       }
-          //     })
-
-          // }}
           uiState = {this.props.uiState}
           request = {this.props.request}
           baseURL = {this.props.baseURL}
@@ -163,6 +136,10 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
           style={{
             display: "flex",
             flexDirection: "row",
+            marginTop: 5,
+            boxShadow: BOX_SHADOW_STR,
+            borderRadius: 5,
+            margin: 3,
           }}
         >
             <canvas
@@ -186,7 +163,7 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
                       x: this.circleCenter!.x * imgScale,
                       y: this.circleCenter!.y * imgScale,
                     },
-                    this.getRadius(this.circleCenter!, this.getMousePosOnCanvas(canvas, event)) / imgScale
+                    this.getRadius(this.circleCenter!, this.getMousePosOnCanvas(canvas, event)) * imgScale
                   );
                   return;
                 }
@@ -224,7 +201,11 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
             }
             style = {{
               backgroundImage: this.props.baseURL + '/image_bytes/' + this.props.uiState.getActiveimage()?.getImgdatavfn(),
-              border: "1px solid red"
+              // border: "1px solid red"
+              boxShadow: BOX_SHADOW_STR,
+              margin: 3,
+              borderRadius: 5,
+              border: "1px solid rgba(0, 0, 0, 0.2)",
             }}
             >
               {/* <img src = {this.props.baseURL + '/image_bytes/' + this.props.uiState.getActiveimage()?.getImgdatavfn()}/> */}
@@ -233,12 +214,14 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
           display: "flex",
         }}>
           <ClipboardView
-            content={this.state.clipboardContent}
+            content={this.props.uiState.getClipboardcontent() || new ClipboardContent()}
           />
         </div>
         </div>
         <div style={{
           display: "flex",
+          // flexDirection: "row",
+          // overflow: "scroll",
         }}>
           {/* {this.state.drops} */}
           <BlotchCircleDisp
@@ -347,24 +330,34 @@ class Drop extends React.Component<DropProps, DropState> {
   render() {
     return (
       <div style={{
-        border: "1px solid blue",
+        // border: "1px solid blue",
+        // marginLeft: 3,
+        // marginRight:
+        // borderRadius: 3,
+        marginLeft: 3,
+        marginRight: 3,
         display: "flex",
         flexDirection: "column",
+        border: "1px solid rgba(0, 0, 0, 0.2)",
       }}>
-        <div>
           <img
             // src={`data:image/png;base64,${this.props.contextPicB64}`}
             src = {this.props.baseURL + '/image_bytes/' + this.props.contextVFN}
             width="150"
+            style = {{
+              // borderRadius: 3,
+              // border: "1px solid rgba(0, 0, 0, 0.2)",
+            }}
           />
-        </div>
-        <div>
           <img
             // src={`data:image/png;base64,${this.props.colourComparePicB64}`}
             src = {this.props.baseURL + '/image_bytes/' + this.props.compareVFN}
             width="150"
+            style = {{
+              // borderRadius: 3,
+              // border: "1px solid rgba(0, 0, 0, 0.2)",
+            }}
           />
-        </div>
       </div>
     )
   }
@@ -420,7 +413,7 @@ class ClipboardView extends React.Component<{ content: ClipboardContent }, {}> {
                   borderRight: "1px solid rgba(0, 0, 0, 0.2)",
                 }}>
                   <div style = {{
-                    backgroundColor: `rgb(${[row.getMur(), row.getMub(), row.getMug()].join(",")})`,
+                    backgroundColor: `rgb(${[row.getMur(), row.getMug(), row.getMub()].join(",")})`,
                     width: 20,
                     marginLeft: 10,
                     height: "100%",
@@ -430,9 +423,10 @@ class ClipboardView extends React.Component<{ content: ClipboardContent }, {}> {
               ].concat([row.getMur(), row.getMug(), row.getMub(), row.getPercr(), row.getPercg(), row.getPercb(), row.getSigmar(), row.getSigmag(), row.getSigmab()].map((elt, idx) =>
                 <td style={{
                   textAlign: "center",
-                  borderRight: idx == 2 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
+                  borderRight: idx == 2 || idx == 5 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
+                  fontSize: "8pt",
                 }}>
-                  {elt}
+                  {elt.toFixed(2)}
                 </td>
               ))}
             </tr>
@@ -470,47 +464,27 @@ class ScanViewer extends React.Component<ScanViewerProps, {}> {
         flexDirection: "row",
         width: "100%",
         minHeight: 100,
+        borderRadius: 5,
       }}>
         <div>
           <button
             style={{
-              height: "100%",
+              height: "90%",
               width: 70,
               fontSize: 12,
-              marginRight: 3,
+              margin: 3,
             }}
             onClick={() => {
               this.props.request(this.props.baseURL + '/open_folder');
-              // fetch('http://localhost:8000/open_folder')
-                // .then(res => res.json())
-                // .then(res => {
-                //   console.log(res)
-
-                //   if (!res.hasImages) {
-                //     alert("Selected Folder is Empty");
-                //     return;
-                //   }
-
-                //   res.thumbnails.map((tn: { fileName: string, img: string }) => {
-                //     this.setState(prevState => ({
-                //       thumbnails: [...prevState.thumbnails, {
-                //         fileName: tn.fileName,
-                //         img64: tn.img,
-                //       }]
-                //     }), () => {
-                //       this._on_selection(0);
-                //     })
-                //   });
-                // })
             }}
           >Open Folder</button>
         </div>
         <div>
           <button
             style={{
-              height: "100%",
+              height: "90%",
               width: 50,
-              marginRight: 3,
+              margin: 3,
             }}
             onClick={() => {
               this._on_selection(this.props.uiState.getSelectedfolderimgidx() - 1);
@@ -521,8 +495,8 @@ class ScanViewer extends React.Component<ScanViewerProps, {}> {
           <button
             style={{
               width: 50,
-              height: "100%",
-              marginRight: 3,
+              height: "90%",
+              margin: 3,
             }}
             onClick={() => {
               this._on_selection(this.props.uiState.getSelectedfolderimgidx() + 1);
@@ -536,42 +510,30 @@ class ScanViewer extends React.Component<ScanViewerProps, {}> {
           }}
           ref={this.scansDivRef}
         >
-          {/* {this.state.thumbnails.map((tn, i) => <img
-            key={i}
-            src={`data:image/png;base64,${tn.img64}`}
-            width="150"
-            style={i == this.state.selectedIdx ? {
-              border: "3px solid rgb(112, 167, 255)",
-              borderRadius: 5,
-              boxShadow: "0 4px 8px 0 rgba(0, 0, 50, 0.4), 0 6px 20px 0 rgba(0, 0, 50, 0.4)",
-              marginRight: 3,
-            } : {
-              marginRight: 3,
-            }}
-            ref={i == this.state.selectedIdx ? this.selectedTNRef : undefined}
-            onClick={() => {
-              this._on_selection(i);
-            }}
-          />)} */}
-          {this.props.uiState.getOpenfolder()?.getFolderimagesList().map((fi: FolderImage, idx) => (
-            <img
-              key={idx}
-              src={this.props.baseURL + "/image_bytes/" + fi.getThumbnailimgvfn()}
-              width="150"
-              style={idx == this.props.uiState.getSelectedfolderimgidx() ? {
-                border: "3px solid rgb(112, 167, 255)",
-                borderRadius: 5,
-                boxShadow: "0 4px 8px 0 rgba(0, 0, 50, 0.4), 0 6px 20px 0 rgba(0, 0, 50, 0.4)",
-                marginRight: 3,
-              } : {
-                marginRight: 3,
+          <div style = {{
+            // overflowX: "scroll",
+          }}>
+            {this.props.uiState.getOpenfolder()?.getFolderimagesList().map((fi: FolderImage, idx) => (
+              <img
+                key={idx}
+                src={this.props.baseURL + "/image_bytes/" + fi.getThumbnailimgvfn()}
+                width="150"
+                style={idx == this.props.uiState.getSelectedfolderimgidx() ? {
+                  border: "3px solid rgb(112, 167, 255)",
+                  borderRadius: 5,
+                  boxShadow: "0 4px 8px 0 rgba(0, 0, 50, 0.4), 0 6px 20px 0 rgba(0, 0, 50, 0.4)",
+                  marginRight: 3,
+                } : {
+                  marginRight: 3,
+                  borderRadius: 3,
+                }}
+                ref={idx == this.props.uiState.getSelectedfolderimgidx() ? this.selectedTNRef : undefined}
+                onClick={() => {
+                  this._on_selection(idx);
               }}
-              ref={idx == this.props.uiState.getSelectedfolderimgidx() ? this.selectedTNRef : undefined}
-              onClick={() => {
-                this._on_selection(idx);
-            }}
-            />
-          ))}
+              />
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -613,7 +575,18 @@ class BlotchCircleDisp extends React.Component<BlotchCircleDispProps, {}> {
 
   render() {
     return (
-      <div>
+      <div style = {{
+        display: "flex",
+        flexDirection: "row",
+        // overflowX: "scroll",
+        overflowX: "auto",
+        width: "100%",
+        margin: 3,
+        borderRadius: 5,
+        boxShadow: BOX_SHADOW_STR,
+        border: "1px solid rgba(0, 0, 0, 0.2)",
+        minHeight: 100,
+      }}>
         {this.props.blotches.map((rb: ReadBlotch) => {
           return (<Drop
             baseURL = {this.props.baseURL}
