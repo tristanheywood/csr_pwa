@@ -42,13 +42,21 @@ class BaseImage(ABC):
   def name(self) -> str:
     raise NotImplementedError()
 
+  @property
+  def fullData(self) -> np.ndarray:
+    '''
+      Return the full image data (for subclasses like MiniFileImage or ThumbnailImage) equivalent to self.data for
+      FileImage and DataImage
+    '''
+    raise NotImplementedError()
+
   def add_circle(self, centerR, centerC, radius):
       rr, cc = draw.circle_perimeter(centerR, centerC, radius)
 
       self.data[rr, cc] = [255, 0, 0]
 
-  def get_circle_context(self, cr, cc, r, s=3):
-      newIm = np.copy(self.data)
+  def get_circle_context(self, cr, cc, r, s=2):
+      newIm = np.copy(self.fullData)
       row, col = draw.circle_perimeter(cr, cc, r)
       newIm[row, col] = [255, 0, 0]
 
@@ -70,10 +78,11 @@ class BaseImage(ABC):
 
   def get_circle_stats(self, cr, cc, r) -> PickStats:
 
-      rows, cols = draw.disk((cc, cr), r)
+      # import pdb; pdb.set_trace()
+      rows, cols = draw.disk((cr, cc), r)
 
-      mu = np.mean(self.data[rows, cols], axis=0)
-      sigma = np.std(self.data[rows, cols], axis=0)
+      mu = np.mean(self.fullData[rows, cols], axis=0)
+      sigma = np.std(self.fullData[rows, cols], axis=0)
 
       ps = PickStats()
       ps.mu_r = mu[0]
@@ -83,24 +92,27 @@ class BaseImage(ABC):
       ps.sigma_g = sigma[1]
       ps.sigma_b = sigma[2]
 
-      totSum = np.sum(self.data[rows, cols])
+      totSum = np.sum(self.fullData[rows, cols])
 
-      ps.perc_r = np.sum(self.data[rows, cols][:, 0]) / totSum
-      ps.perc_g = np.sum(self.data[rows, cols][:, 1]) / totSum
-      ps.prec_b = np.sum(self.data[rows, cols][:, 2]) / totSum
+      ps.perc_r = np.sum(self.fullData[rows, cols][:, 0]) / totSum
+      ps.perc_g = np.sum(self.fullData[rows, cols][:, 1]) / totSum
+      ps.perc_b = np.sum(self.fullData[rows, cols][:, 2]) / totSum
 
       return ps
 
   def get_colour_display(self, cr, cc, r):
-      colour = self.get_circle_colour(cr, cc, r)
+      # colour = self.get_circle_colour(cr, cc, r)
+      ps = self.get_circle_stats(cr, cc, r)
+      colour = np.array([ps.mu_r, ps.mu_g, ps.mu_b])
+      ImgLogger.log("Got mean colour for display: ", colour)
 
       rows, cols = draw.disk((cr, cc), r)
 
-      im = np.full((2 * r, 2 * r, 3), 255, dtype=self.data.dtype)
+      im = np.full((2 * r, 2 * r, 3), 255, dtype=self.fullData.dtype)
 
       irows, icols = draw.disk((r, r), r)
 
-      im[irows, icols] = self.data[rows, cols]
+      im[irows, icols] = self.fullData[rows, cols]
 
       im[:, :r] = colour
 
@@ -158,6 +170,10 @@ class FileImage(BaseImage):
       return self._data
 
     @property
+    def fullData(self):
+      return self.data
+
+    @property
     def pngBytesIO(self):
       if self._pngBytesIO is None:
         self._pngBytesIO = BytesIO()
@@ -191,6 +207,10 @@ class ThumbnailImage(BaseImage):
       self._data = np.asarray(self._srcImg.data[::8, ::8], order='C')
 
     return self._data
+
+  @property
+  def fullData(self) -> np.ndarray:
+    return self._srcImg.fullData
 
   @property
   def pngBytesIO(self) -> BytesIO:
@@ -227,6 +247,10 @@ class MiniFileImage(BaseImage):
     return self._data
 
   @property
+  def fullData(self) -> np.ndarray:
+    return self._srcImg.data
+
+  @property
   def name(self) -> str:
     return 'downsampled_' + self._srcImg.name.__str__()
 
@@ -249,6 +273,10 @@ class DataImage(BaseImage):
   @property
   def data(self) -> np.ndarray:
     return self._data
+
+  @property
+  def fullData(self) -> np.ndarray:
+    return self.data
 
   # @property
   # def pngBytesIO(self) -> BytesIO:
