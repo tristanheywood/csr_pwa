@@ -215,6 +215,8 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
         }}>
           <ClipboardView
             content={this.props.uiState.getClipboardcontent() || new ClipboardContent()}
+            baseURL = {this.props.baseURL}
+            request = {this.props.request}
           />
         </div>
         </div>
@@ -363,7 +365,13 @@ class Drop extends React.Component<DropProps, DropState> {
   }
 }
 
-class ClipboardView extends React.Component<{ content: ClipboardContent }, {}> {
+type ClipboardViewProps = {
+  content: ClipboardContent;
+  baseURL: string;
+  request: (url: string) => void;
+}
+
+class ClipboardView extends React.Component<ClipboardViewProps, {}> {
 
   thStyle = {textAlign: "center",  width: 40,};
   trStyle = {
@@ -393,7 +401,7 @@ class ClipboardView extends React.Component<{ content: ClipboardContent }, {}> {
           borderRadius: 5,
         }}>
           <tr style = {this.trStyle}>
-            {["", "μR", "μG", "μB","%R", "%G", "%B", "σR", "σG", "σB", ].map((header, idx) => {
+            {["🎨", "μR", "μG", "μB","%R", "%G", "%B", "σR", "σG", "σB", "➖"].map((header, idx) => {
               console.log(idx, idx % 3 == 1);
               return (
               <th style = {{
@@ -406,7 +414,7 @@ class ClipboardView extends React.Component<{ content: ClipboardContent }, {}> {
           </tr>
         </thead>
         <tbody>
-          {this.props.content.getRowsList().map((row: PickStats) =>
+          {this.props.content.getRowsList().map((row: PickStats, idx: number) =>
             <tr style = {this.trStyle}>
               {[
                 <td style = {{
@@ -423,12 +431,50 @@ class ClipboardView extends React.Component<{ content: ClipboardContent }, {}> {
               ].concat([row.getMur(), row.getMug(), row.getMub(), row.getPercr(), row.getPercg(), row.getPercb(), row.getSigmar(), row.getSigmag(), row.getSigmab()].map((elt, idx) =>
                 <td style={{
                   textAlign: "center",
-                  borderRight: idx == 2 || idx == 5 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
+                  borderRight: idx % 3 == 2 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
                   fontSize: "8pt",
                 }}>
                   {elt.toFixed(2)}
                 </td>
-              ))}
+              )).concat([
+                <td style = {{
+                  // overflow: 'hidden',
+                  justifyContent: "center",
+                  alignItems: "center",
+                  display: "flex",
+                }}>
+                  {/* <div style = {{
+                    width: 20,
+                    height: "100%",
+                    // justifyContent: "center",
+                    // alignItems: "center",
+                    marginLeft: 9,
+                    borderRadius: 3,
+                    backgroundColor: "rgba(255, 255, 255, 0.3)"
+                  }}
+                    onClick
+                  >
+                    ➖
+                  </div> */}
+                  <button
+                    style = {{
+                      marginLeft: 2,
+                      marginRight: 2,
+                      backgroundColor: "rgba(255, 255, 255, 0.4)",
+                      border:"1px solid rgba(0, 0, 0, 0.5)",
+                      height: "100%",
+                      fontSize: "8pt",
+                      display: "flex",
+                    }}
+                    onClick = {() => {
+                      console.log("Remove blotch request for ", this.props.content.getBlotchidsList()[idx]);
+                      this.props.request(this.props.baseURL + "/remove_blotch/" + this.props.content.getBlotchidsList()[idx]);
+                    }}
+                  >
+                    ➖
+                  </button>
+                </td>
+              ])}
             </tr>
           )}
         </tbody>

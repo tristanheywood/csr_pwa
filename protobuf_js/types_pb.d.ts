@@ -61,6 +61,11 @@ export class ClipboardContent extends jspb.Message {
   setRowsList(value: Array<PickStats>): void;
   addRows(value?: PickStats, index?: number): PickStats;
 
+  clearBlotchidsList(): void;
+  getBlotchidsList(): Array<number>;
+  setBlotchidsList(value: Array<number>): void;
+  addBlotchids(value: number, index?: number): number;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ClipboardContent.AsObject;
   static toObject(includeInstance: boolean, msg: ClipboardContent): ClipboardContent.AsObject;
@@ -74,6 +79,7 @@ export class ClipboardContent extends jspb.Message {
 export namespace ClipboardContent {
   export type AsObject = {
     rowsList: Array<PickStats.AsObject>,
+    blotchidsList: Array<number>,
   }
 }
 
@@ -172,6 +178,9 @@ export class ReadBlotch extends jspb.Message {
   getComparevfn(): string;
   setComparevfn(value: string): void;
 
+  getBlotchid(): number;
+  setBlotchid(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ReadBlotch.AsObject;
   static toObject(includeInstance: boolean, msg: ReadBlotch): ReadBlotch.AsObject;
@@ -188,6 +197,7 @@ export namespace ReadBlotch {
     stats?: PickStats.AsObject,
     contextvfn: string,
     comparevfn: string,
+    blotchid: number,
   }
 }
 

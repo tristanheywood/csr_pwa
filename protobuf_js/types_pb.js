@@ -564,7 +564,7 @@ proto.PickStats.prototype.setSigmab = function(value) {
  * @private {!Array<number>}
  * @const
  */
-proto.ClipboardContent.repeatedFields_ = [1];
+proto.ClipboardContent.repeatedFields_ = [1,2];
 
 
 
@@ -598,7 +598,8 @@ proto.ClipboardContent.prototype.toObject = function(opt_includeInstance) {
 proto.ClipboardContent.toObject = function(includeInstance, msg) {
   var f, obj = {
     rowsList: jspb.Message.toObjectList(msg.getRowsList(),
-    proto.PickStats.toObject, includeInstance)
+    proto.PickStats.toObject, includeInstance),
+    blotchidsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -640,6 +641,10 @@ proto.ClipboardContent.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,proto.PickStats.deserializeBinaryFromReader);
       msg.addRows(value);
       break;
+    case 2:
+      var value = /** @type {!Array<number>} */ (reader.readPackedInt32());
+      msg.setBlotchidsList(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -675,6 +680,13 @@ proto.ClipboardContent.serializeBinaryToWriter = function(message, writer) {
       1,
       f,
       proto.PickStats.serializeBinaryToWriter
+    );
+  }
+  f = message.getBlotchidsList();
+  if (f.length > 0) {
+    writer.writePackedInt32(
+      2,
+      f
     );
   }
 };
@@ -715,6 +727,43 @@ proto.ClipboardContent.prototype.addRows = function(opt_value, opt_index) {
  */
 proto.ClipboardContent.prototype.clearRowsList = function() {
   return this.setRowsList([]);
+};
+
+
+/**
+ * repeated int32 blotchIDs = 2;
+ * @return {!Array<number>}
+ */
+proto.ClipboardContent.prototype.getBlotchidsList = function() {
+  return /** @type {!Array<number>} */ (jspb.Message.getRepeatedField(this, 2));
+};
+
+
+/**
+ * @param {!Array<number>} value
+ * @return {!proto.ClipboardContent} returns this
+ */
+proto.ClipboardContent.prototype.setBlotchidsList = function(value) {
+  return jspb.Message.setField(this, 2, value || []);
+};
+
+
+/**
+ * @param {number} value
+ * @param {number=} opt_index
+ * @return {!proto.ClipboardContent} returns this
+ */
+proto.ClipboardContent.prototype.addBlotchids = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.ClipboardContent} returns this
+ */
+proto.ClipboardContent.prototype.clearBlotchidsList = function() {
+  return this.setBlotchidsList([]);
 };
 
 
@@ -1293,7 +1342,8 @@ proto.ReadBlotch.toObject = function(includeInstance, msg) {
     circle: (f = msg.getCircle()) && proto.PickedCircle.toObject(includeInstance, f),
     stats: (f = msg.getStats()) && proto.PickStats.toObject(includeInstance, f),
     contextvfn: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    comparevfn: jspb.Message.getFieldWithDefault(msg, 4, "")
+    comparevfn: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    blotchid: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -1347,6 +1397,10 @@ proto.ReadBlotch.deserializeBinaryFromReader = function(msg, reader) {
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setComparevfn(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setBlotchid(value);
       break;
     default:
       reader.skipField();
@@ -1404,6 +1458,13 @@ proto.ReadBlotch.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       4,
+      f
+    );
+  }
+  f = message.getBlotchid();
+  if (f !== 0) {
+    writer.writeInt32(
+      5,
       f
     );
   }
@@ -1517,6 +1578,24 @@ proto.ReadBlotch.prototype.getComparevfn = function() {
  */
 proto.ReadBlotch.prototype.setComparevfn = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional int32 blotchID = 5;
+ * @return {number}
+ */
+proto.ReadBlotch.prototype.getBlotchid = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.ReadBlotch} returns this
+ */
+proto.ReadBlotch.prototype.setBlotchid = function(value) {
+  return jspb.Message.setProto3IntField(this, 5, value);
 };
 
 
