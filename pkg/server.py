@@ -26,13 +26,18 @@ import pyperclip
 from skimage import io, transform
 import numpy as np
 
-# ide likes .img imports, python does not
-if False is True:
-    from .img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
-    from .protobuf_py.types import *
-else:
-    from img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
-    from protobuf_py.types import *
+# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+# # ide likes .img imports, python does not
+# if False is True:
+#     from .img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
+#     from .protobuf_py.types import *
+# else:
+#     from img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
+#     from protobuf_py.types import *
+
+from .img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
+from .protobuf_py.types import *
 
 
 nodeRecvQ = queue.Queue()
