@@ -2,4 +2,4 @@ protoc --plugin=protoc-gen-ts=..\..\node_modules\.bin\protoc-gen-ts.cmd --js_out
 
 # protoc --python_out=..\sotcat_backend\protobuf_py types.proto
 
-protoc --python_betterproto_out=..\sotcat_backend\protobuf_py types.proto
+protoc --python_betterproto_out=..\sotcat_backend\pkg\protobuf_py types.proto
