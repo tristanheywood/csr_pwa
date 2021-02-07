@@ -15,10 +15,12 @@ from skimage import data, io, filters, draw
 from PIL import Image as PILImage
 from websockets.typing import Data
 
-if False is True:
-    from .protobuf_py.types import *
-else:
-    from protobuf_py.types import *
+from .protobuf_py.types import *
+
+# if False is True:
+#     from .protobuf_py.types import *
+# else:
+#     from protobuf_py.types import *
 
 class ImgLogger:
 

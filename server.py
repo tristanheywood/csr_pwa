@@ -36,8 +36,8 @@ import numpy as np
 #     from img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
 #     from protobuf_py.types import *
 
-from .img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
-from .protobuf_py.types import *
+from pkg.img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
+from pkg.protobuf_py.types import *
 
 
 nodeRecvQ = queue.Queue()
