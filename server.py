@@ -38,7 +38,9 @@ import numpy as np
 
 from pkg.img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
 from pkg.protobuf_py.types import *
-
+if False is True:
+  from .pkg.img import BaseImage, ImageFolder, Session, ImageSession, ImgLogger, BlotchCircle
+  from .pkg.protobuf_py.types import *
 
 nodeRecvQ = queue.Queue()
 nodeSendQ = queue.Queue()
