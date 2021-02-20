@@ -31,6 +31,12 @@ export class PickStats extends jspb.Message {
   getSigmab(): number;
   setSigmab(value: number): void;
 
+  getNumpixels(): number;
+  setNumpixels(value: number): void;
+
+  getPickname(): string;
+  setPickname(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PickStats.AsObject;
   static toObject(includeInstance: boolean, msg: PickStats): PickStats.AsObject;
@@ -52,6 +58,48 @@ export namespace PickStats {
     sigmar: number,
     sigmag: number,
     sigmab: number,
+    numpixels: number,
+    pickname: string,
+  }
+}
+
+export class ClipboardViewColumns extends jspb.Message {
+  getName(): boolean;
+  setName(value: boolean): void;
+
+  getColour(): boolean;
+  setColour(value: boolean): void;
+
+  getMurgb(): boolean;
+  setMurgb(value: boolean): void;
+
+  getPercrgb(): boolean;
+  setPercrgb(value: boolean): void;
+
+  getSigmargb(): boolean;
+  setSigmargb(value: boolean): void;
+
+  getNumpixels(): boolean;
+  setNumpixels(value: boolean): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ClipboardViewColumns.AsObject;
+  static toObject(includeInstance: boolean, msg: ClipboardViewColumns): ClipboardViewColumns.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ClipboardViewColumns, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ClipboardViewColumns;
+  static deserializeBinaryFromReader(message: ClipboardViewColumns, reader: jspb.BinaryReader): ClipboardViewColumns;
+}
+
+export namespace ClipboardViewColumns {
+  export type AsObject = {
+    name: boolean,
+    colour: boolean,
+    murgb: boolean,
+    percrgb: boolean,
+    sigmargb: boolean,
+    numpixels: boolean,
   }
 }
 
@@ -216,6 +264,11 @@ export class ActiveImage extends jspb.Message {
   getDownsamplefactor(): number;
   setDownsamplefactor(value: number): void;
 
+  hasClipboardviewcolumns(): boolean;
+  clearClipboardviewcolumns(): void;
+  getClipboardviewcolumns(): ClipboardViewColumns | undefined;
+  setClipboardviewcolumns(value?: ClipboardViewColumns): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ActiveImage.AsObject;
   static toObject(includeInstance: boolean, msg: ActiveImage): ActiveImage.AsObject;
@@ -232,6 +285,7 @@ export namespace ActiveImage {
     imgdatavfn: string,
     readblotchesList: Array<ReadBlotch.AsObject>,
     downsamplefactor: number,
+    clipboardviewcolumns?: ClipboardViewColumns.AsObject,
   }
 }
 

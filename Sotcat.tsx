@@ -132,6 +132,16 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
           request = {this.props.request}
           baseURL = {this.props.baseURL}
         />
+        <div style = {{
+          boxShadow: BOX_SHADOW_STR,
+          borderRadius: 5,
+          minHeight: 20,
+          display: "flex",
+        }}>
+          <CSRMenu
+
+          />
+        </div>
         <div
           style={{
             display: "flex",
@@ -142,6 +152,7 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
             margin: 3,
           }}
         >
+
           <div style={{
             display: "inline-block",
           }}>
@@ -405,7 +416,7 @@ class ClipboardView extends React.Component<ClipboardViewProps, {}> {
           borderRadius: 5,
         }}>
           <tr style = {this.trStyle}>
-            {["🎨", "μR", "μG", "μB","%R", "%G", "%B", "σR", "σG", "σB", "➖"].map((header, idx) => {
+            {["🎨", "μR", "μG", "μB","%R", "%G", "%B", "σR", "σG", "σB", "px", "➖"].map((header, idx) => {
               console.log(idx, idx % 3 == 1);
               return (
               <th style = {{
@@ -432,7 +443,7 @@ class ClipboardView extends React.Component<ClipboardViewProps, {}> {
                     borderRadius: 2,
                   }}/>
                 </td>
-              ].concat([row.getMur(), row.getMug(), row.getMub(), row.getPercr(), row.getPercg(), row.getPercb(), row.getSigmar(), row.getSigmag(), row.getSigmab()].map((elt, idx) =>
+              ].concat([row.getMur(), row.getMug(), row.getMub(), row.getPercr(), row.getPercg(), row.getPercb(), row.getSigmar(), row.getSigmag(), row.getSigmab(), row.getNumpixels()].map((elt, idx) =>
                 <td style={{
                   textAlign: "center",
                   borderRight: idx % 3 == 2 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
@@ -647,7 +658,42 @@ class BlotchCircleDisp extends React.Component<BlotchCircleDispProps, {}> {
       </div>
     )
   }
+}
 
+type CSRMenuProps = {
+
+};
+
+class CSRMenu extends React.Component<CSRMenuProps, {}> {
+
+  SCALE_MARKS: Array<number> = [0.25, 0.5, 1, 2, 4, 8];
+  marks: Array<any>;
+
+  constructor(props: CSRMenuProps) {
+    super(props);
+
+    this.marks = this.SCALE_MARKS.map(elt => {
+      return {
+        value: elt,
+        label: elt.toString(),
+      }
+    })
+  }
+
+  render() {
+    return (
+      <div style = {{
+        display: "flex",
+        flexDirection: "row",
+      }}>
+        {/* <span>
+          Zoom:
+        </span> */}
+          <label htmlFor ="zoom">Zoom: </label>
+          <input type="range" id="zoom" name="zoom" min="0" max = {this.marks.length}></input>
+      </div>
+    )
+  }
 }
 
 export default SotcatContainer;
