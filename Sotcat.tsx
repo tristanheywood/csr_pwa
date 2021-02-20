@@ -142,7 +142,10 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
             margin: 3,
           }}
         >
-            <canvas
+          <div style={{
+            display: "inline-block",
+          }}>
+          <canvas
               id="canvas"
               // width={(this.state.img && this.state.img!.width * this.imgScale) || "1600"}
               // height={(this.state.img && this.state.img!.height * this.imgScale) || "1000"}
@@ -210,7 +213,8 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
             >
               {/* <img src = {this.props.baseURL + '/image_bytes/' + this.props.uiState.getActiveimage()?.getImgdatavfn()}/> */}
             </canvas>
-                  <div style={{
+          </div>
+        <div style={{
           display: "flex",
         }}>
           <ClipboardView
