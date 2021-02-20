@@ -10,6 +10,17 @@ message PickStats {
   double sigmaR = 7;
   double sigmaG = 8;
   double sigmaB = 9;
+  int32 numPixels = 10;
+  string pickName = 11;
+}
+
+message ClipboardViewColumns {
+  bool name = 1;
+  bool colour = 2;
+  bool muRGB = 3;
+  bool percRGB = 4;
+  bool sigmaRGB = 5;
+  bool numPixels = 6;
 }
 
 message ClipboardContent {
@@ -48,6 +59,7 @@ message ActiveImage {
   string imgDataVFN = 2;
   repeated ReadBlotch readBlotches = 3;
   int32 downsampleFactor = 4;
+  ClipboardViewColumns clipboardViewColumns = 5;
 }
 
 message UIState {
