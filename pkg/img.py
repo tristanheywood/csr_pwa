@@ -167,7 +167,7 @@ class FileImage(BaseImage):
         ImgLogger.log('Opening', self.fname)
         # ImgLogger.log('WARNING: IMAGES ARE BEING DOWNSAMPLED')
         # self._data = io.imread(self.fname)[:: self.fileDownsample, :: self.fileDownsample]
-        self._data = io.imread(self.fname)
+        self._data = io.imread(self.fname)[:,:,:3] # ignore alpha channel if present
 
       return self._data
 
@@ -187,9 +187,9 @@ class FileImage(BaseImage):
     def name(self) -> str:
       return self.fname
 
-    @classmethod
-    def from_img_file(cls, fname):
-        return cls(data=io.imread(fname))
+    # @classmethod
+    # def from_img_file(cls, fname):
+    #     return cls(data=io.imread(fname))
 
 class ThumbnailImage(BaseImage):
 
