@@ -100,6 +100,8 @@ class BaseImage(ABC):
       ps.perc_g = np.sum(self.fullData[rows, cols][:, 1]) / totSum
       ps.perc_b = np.sum(self.fullData[rows, cols][:, 2]) / totSum
 
+      ps.num_pixels = len(rows)
+
       return ps
 
   def get_colour_display(self, cr, cc, r):

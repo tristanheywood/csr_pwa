@@ -18,6 +18,18 @@ class PickStats(betterproto.Message):
     sigma_r: float = betterproto.double_field(7)
     sigma_g: float = betterproto.double_field(8)
     sigma_b: float = betterproto.double_field(9)
+    num_pixels: int = betterproto.int32_field(10)
+    pick_name: str = betterproto.string_field(11)
+
+
+@dataclass
+class ClipboardViewColumns(betterproto.Message):
+    name: bool = betterproto.bool_field(1)
+    colour: bool = betterproto.bool_field(2)
+    mu_r_g_b: bool = betterproto.bool_field(3)
+    perc_r_g_b: bool = betterproto.bool_field(4)
+    sigma_r_g_b: bool = betterproto.bool_field(5)
+    num_pixels: bool = betterproto.bool_field(6)
 
 
 @dataclass
@@ -64,6 +76,7 @@ class ActiveImage(betterproto.Message):
     img_data_v_f_n: str = betterproto.string_field(2)
     read_blotches: List["ReadBlotch"] = betterproto.message_field(3)
     downsample_factor: int = betterproto.int32_field(4)
+    clipboard_view_columns: "ClipboardViewColumns" = betterproto.message_field(5)
 
 
 @dataclass
