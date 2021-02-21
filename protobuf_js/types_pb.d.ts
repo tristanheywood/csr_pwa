@@ -261,8 +261,11 @@ export class ActiveImage extends jspb.Message {
   setReadblotchesList(value: Array<ReadBlotch>): void;
   addReadblotches(value?: ReadBlotch, index?: number): ReadBlotch;
 
-  getDownsamplefactor(): number;
-  setDownsamplefactor(value: number): void;
+  getZoomratiosrcimg(): number;
+  setZoomratiosrcimg(value: number): void;
+
+  getZoomratioviewimg(): number;
+  setZoomratioviewimg(value: number): void;
 
   hasClipboardviewcolumns(): boolean;
   clearClipboardviewcolumns(): void;
@@ -284,7 +287,8 @@ export namespace ActiveImage {
     filename: string,
     imgdatavfn: string,
     readblotchesList: Array<ReadBlotch.AsObject>,
-    downsamplefactor: number,
+    zoomratiosrcimg: number,
+    zoomratioviewimg: number,
     clipboardviewcolumns?: ClipboardViewColumns.AsObject,
   }
 }

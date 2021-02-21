@@ -2004,7 +2004,8 @@ proto.ActiveImage.toObject = function(includeInstance, msg) {
     imgdatavfn: jspb.Message.getFieldWithDefault(msg, 2, ""),
     readblotchesList: jspb.Message.toObjectList(msg.getReadblotchesList(),
     proto.ReadBlotch.toObject, includeInstance),
-    downsamplefactor: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    zoomratiosrcimg: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    zoomratioviewimg: jspb.Message.getFieldWithDefault(msg, 5, 0),
     clipboardviewcolumns: (f = msg.getClipboardviewcolumns()) && proto.ClipboardViewColumns.toObject(includeInstance, f)
   };
 
@@ -2057,9 +2058,13 @@ proto.ActiveImage.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 4:
       var value = /** @type {number} */ (reader.readInt32());
-      msg.setDownsamplefactor(value);
+      msg.setZoomratiosrcimg(value);
       break;
     case 5:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setZoomratioviewimg(value);
+      break;
+    case 6:
       var value = new proto.ClipboardViewColumns;
       reader.readMessage(value,proto.ClipboardViewColumns.deserializeBinaryFromReader);
       msg.setClipboardviewcolumns(value);
@@ -2115,17 +2120,24 @@ proto.ActiveImage.serializeBinaryToWriter = function(message, writer) {
       proto.ReadBlotch.serializeBinaryToWriter
     );
   }
-  f = message.getDownsamplefactor();
+  f = message.getZoomratiosrcimg();
   if (f !== 0) {
     writer.writeInt32(
       4,
       f
     );
   }
+  f = message.getZoomratioviewimg();
+  if (f !== 0) {
+    writer.writeInt32(
+      5,
+      f
+    );
+  }
   f = message.getClipboardviewcolumns();
   if (f != null) {
     writer.writeMessage(
-      5,
+      6,
       f,
       proto.ClipboardViewColumns.serializeBinaryToWriter
     );
@@ -2208,10 +2220,10 @@ proto.ActiveImage.prototype.clearReadblotchesList = function() {
 
 
 /**
- * optional int32 downsampleFactor = 4;
+ * optional int32 zoomRatioSrcImg = 4;
  * @return {number}
  */
-proto.ActiveImage.prototype.getDownsamplefactor = function() {
+proto.ActiveImage.prototype.getZoomratiosrcimg = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
 };
 
@@ -2220,18 +2232,36 @@ proto.ActiveImage.prototype.getDownsamplefactor = function() {
  * @param {number} value
  * @return {!proto.ActiveImage} returns this
  */
-proto.ActiveImage.prototype.setDownsamplefactor = function(value) {
+proto.ActiveImage.prototype.setZoomratiosrcimg = function(value) {
   return jspb.Message.setProto3IntField(this, 4, value);
 };
 
 
 /**
- * optional ClipboardViewColumns clipboardViewColumns = 5;
+ * optional int32 zoomRatioViewImg = 5;
+ * @return {number}
+ */
+proto.ActiveImage.prototype.getZoomratioviewimg = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.ActiveImage} returns this
+ */
+proto.ActiveImage.prototype.setZoomratioviewimg = function(value) {
+  return jspb.Message.setProto3IntField(this, 5, value);
+};
+
+
+/**
+ * optional ClipboardViewColumns clipboardViewColumns = 6;
  * @return {?proto.ClipboardViewColumns}
  */
 proto.ActiveImage.prototype.getClipboardviewcolumns = function() {
   return /** @type{?proto.ClipboardViewColumns} */ (
-    jspb.Message.getWrapperField(this, proto.ClipboardViewColumns, 5));
+    jspb.Message.getWrapperField(this, proto.ClipboardViewColumns, 6));
 };
 
 
@@ -2240,7 +2270,7 @@ proto.ActiveImage.prototype.getClipboardviewcolumns = function() {
  * @return {!proto.ActiveImage} returns this
 */
 proto.ActiveImage.prototype.setClipboardviewcolumns = function(value) {
-  return jspb.Message.setWrapperField(this, 5, value);
+  return jspb.Message.setWrapperField(this, 6, value);
 };
 
 
@@ -2258,7 +2288,7 @@ proto.ActiveImage.prototype.clearClipboardviewcolumns = function() {
  * @return {boolean}
  */
 proto.ActiveImage.prototype.hasClipboardviewcolumns = function() {
-  return jspb.Message.getField(this, 5) != null;
+  return jspb.Message.getField(this, 6) != null;
 };
 
 

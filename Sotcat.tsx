@@ -137,9 +137,14 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
           borderRadius: 5,
           minHeight: 20,
           display: "flex",
+          margin: 3,
+          marginTop: 5,
+          marginBottom: 5,
         }}>
           <CSRMenu
-
+            acImg = {this.props.uiState.getActiveimage()!}
+            request = {this.props.request}
+            baseURL = {this.props.baseURL}
           />
         </div>
         <div
@@ -170,7 +175,9 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
                   this.amDrawingCircle = false;
                   // return;
 
-                  let imgScale = this.props.uiState.getActiveimage()?.getDownsamplefactor()!
+                  let imgScale = this.props.uiState.getActiveimage()?.getZoomratiosrcimg()! / this.props.uiState.getActiveimage()?.getZoomratioviewimg()!;
+
+                  // let imgScale = this.props.uiState.getActiveimage()?.getDownsamplefactor()!
 
                   this.postCircle(
                     {
@@ -661,36 +668,81 @@ class BlotchCircleDisp extends React.Component<BlotchCircleDispProps, {}> {
 }
 
 type CSRMenuProps = {
-
+  acImg: ActiveImage,
+  request: (url: string, body?: any) => void,
+  baseURL: string,
 };
 
 class CSRMenu extends React.Component<CSRMenuProps, {}> {
 
-  SCALE_MARKS: Array<number> = [0.25, 0.5, 1, 2, 4, 8];
-  marks: Array<any>;
+  // SCALE_MARKS: Array<number> = [1/8, 1/4, 1/2, 1, 2, 4, 8];
+  // marks: Array<any>;
+
+  ZOOM_RATIO_VIEW_TO_SRC: Array<Array<number>> = [[1, 16], [1, 8], [1, 4], [1, 2], [1, 1], [2, 1], [4, 1], [8, 1]]
 
   constructor(props: CSRMenuProps) {
     super(props);
 
-    this.marks = this.SCALE_MARKS.map(elt => {
-      return {
-        value: elt,
-        label: elt.toString(),
+    // this.marks = this.SCALE_MARKS.map(elt => {
+    //   return {
+    //     value: elt,
+    //     label: elt.toString(),
+    //   }
+    // })
+  }
+
+  _get_idx_of_ratio(viewRatio: number, srcRatio: number) {
+    let idx = -1;
+    this.ZOOM_RATIO_VIEW_TO_SRC.forEach(
+      (elt, i) => {
+        if (elt[0] == viewRatio && elt[1] == srcRatio) {
+          idx = i;
+        }
       }
-    })
+    );
+    return idx;
   }
 
   render() {
+    if (this.props.acImg == undefined) {
+      return (<div></div>)
+    }
     return (
       <div style = {{
         display: "flex",
         flexDirection: "row",
       }}>
-        {/* <span>
-          Zoom:
-        </span> */}
-          <label htmlFor ="zoom">Zoom: </label>
-          <input type="range" id="zoom" name="zoom" min="0" max = {this.marks.length}></input>
+          <label
+            htmlFor ="zoom"
+            style = {{
+              marginLeft: 3,
+              marginRight: 3,
+            }}
+          >Zoom: </label>
+          <input
+            type="range" id="zoom" name="zoom"
+            min="0" max = {this.ZOOM_RATIO_VIEW_TO_SRC.length-1}
+            value = {
+              this._get_idx_of_ratio(this.props.acImg.getZoomratioviewimg(), this.props.acImg.getZoomratiosrcimg())
+            }
+            style = {{
+              marginLeft: 5,
+            }}
+            width = {150}
+            onChange = {(event: React.ChangeEvent<HTMLInputElement>) => {
+              // console.log(event);
+              console.log(event.target.value);
+
+              let ratio = this.ZOOM_RATIO_VIEW_TO_SRC[event.target.value as unknown as number];
+
+              let viewRatio = ratio[0];
+              let srcRatio = ratio[1];
+              this.props.request(this.props.baseURL + `/set_zoom/${viewRatio}/${srcRatio}`)
+            }}
+          ></input>
+          <span>
+            {`${this.props.acImg.getZoomratioviewimg()!}:${this.props.acImg.getZoomratiosrcimg()}`}
+          </span>
       </div>
     )
   }
