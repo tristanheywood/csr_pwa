@@ -465,15 +465,32 @@ class ClipboardView extends React.Component<ClipboardViewProps, {}> {
                     borderRadius: 2,
                   }}/>
                 </td>
-              ].concat([row.getMur(), row.getMug(), row.getMub(), row.getPercr(), row.getPercg(), row.getPercb(), row.getSigmar(), row.getSigmag(), row.getSigmab(), row.getNumpixels()].map((elt, idx) =>
-                <td style={{
-                  textAlign: "center",
-                  borderRight: idx % 3 == 2 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
-                  fontSize: "8pt",
-                }}>
-                  {elt.toFixed(2)}
-                </td>
-              )).concat([
+              ].concat(this.props.cbCols.getName() ? [
+                this._render_td("", true)
+              ] : []).concat(this.props.cbCols.getMurgb() ? [
+                this._render_td(row.getMur().toFixed(2), false),
+                this._render_td(row.getMug().toFixed(2), false),
+                this._render_td(row.getMub().toFixed(2), true),
+              ] : []).concat(this.props.cbCols.getPercrgb() ? [
+                this._render_td(row.getPercr().toFixed(2), false),
+                this._render_td(row.getPercg().toFixed(2), false),
+                this._render_td(row.getPercb().toFixed(2), true),
+              ] : []).concat(this.props.cbCols.getSigmargb() ? [
+                this._render_td(row.getSigmar().toFixed(2), false),
+                this._render_td(row.getSigmag().toFixed(2), false),
+                this._render_td(row.getSigmab().toFixed(2), true),
+              ] : []).concat(this.props.cbCols.getNumpixels() ? [
+                this._render_td(row.getNumpixels().toString(), true),
+              ] : [])
+              // .concat([row.getMur(), row.getMug(), row.getMub(), row.getPercr(), row.getPercg(), row.getPercb(), row.getSigmar(), row.getSigmag(), row.getSigmab(), row.getNumpixels()].map((elt, idx) =>
+              //   <td style={{
+              //     textAlign: "center",
+              //     borderRight: idx % 3 == 2 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
+              //     fontSize: "8pt",
+              //   }}>
+              //     {elt.toFixed(2)}
+              //   </td>
+              .concat([
                 <td style = {{
                   // overflow: 'hidden',
                   justifyContent: "center",
@@ -528,6 +545,18 @@ class ClipboardView extends React.Component<ClipboardViewProps, {}> {
           borderRight: border ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
         }}
       >{name}</th>
+    )
+  }
+
+  _render_td(text: string, border: boolean) {
+    return (
+      <td style={{
+        textAlign: "center",
+        borderRight: border ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
+        fontSize: "8pt",
+      }}>
+        {text}
+      </td>
     )
   }
 
