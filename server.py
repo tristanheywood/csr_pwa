@@ -191,6 +191,8 @@ def set_clipboard_cols():
   global session
   session.selectedClipboardCols = cvc
 
+  pyperclip.copy(session.get_clipboard_str())
+
   return session.get_UIState_msg().SerializeToString()
 
 @app.route('/new_circle', methods=['POST'])
@@ -248,7 +250,8 @@ def do_new_circle():
     #     clipboard
     # )
 
-    pyperclip.copy(imgSess.get_clipboard_str())
+    # pyperclip.copy(imgSess.get_clipboard_str())
+    pyperclip.copy(session.get_clipboard_str())
 
     # return {
     #     "circContext": img64,
@@ -286,7 +289,7 @@ def remove_blotch(blotchId):
   global session
   session.currImgSession.remove_blotch(int(blotchId))
 
-  pyperclip.copy(session.currImgSession.get_clipboard_str())
+  pyperclip.copy(session.get_clipboard_str())
 
   return session.get_UIState_msg().SerializeToString()
 

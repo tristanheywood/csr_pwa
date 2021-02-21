@@ -489,10 +489,16 @@ class BlotchCircle:
             image.get_circle_stats(centerRow, centerCol, radius),
         )
 
-    def get_clipboard_str(self):
+    def get_clipboard_str(self, cols: ClipboardViewColumns):
       pc = self.pickStats
       return '\t'.join(
-        str(x) for x in [pc.mu_r ,pc.mu_g, pc.mu_b, pc.perc_r, pc.perc_g, pc.perc_b, pc.sigma_r, pc.sigma_g, pc.sigma_b]
+        str(x) for x in (
+          ([pc.pick_name] if cols.name else []) +
+          ([pc.mu_r ,pc.mu_g, pc.mu_b] if cols.mu_r_g_b else []) +
+          ([pc.perc_r, pc.perc_g, pc.perc_b] if cols.perc_r_g_b else [])+
+          ([pc.sigma_r, pc.sigma_g, pc.sigma_b] if cols.sigma_r_g_b else []) +
+          ([pc.num_pixels] if cols.num_pixels else [])
+          )
       )
 
     # def register_imgs_on_session(self, session: 'Session'):
@@ -547,8 +553,8 @@ class ImageSession:
                 self.blotchCircles.pop(idx)
                 return
 
-    def get_clipboard_str(self) -> str:
-      return '\n'.join(bc.get_clipboard_str() for bc in self.blotchCircles)
+    def get_clipboard_str(self, cols: ClipboardViewColumns) -> str:
+      return '\n'.join(bc.get_clipboard_str(cols) for bc in self.blotchCircles)
 
     def get_clipboard_content_msg(self) -> ClipboardContent:
       cc = ClipboardContent()
@@ -661,6 +667,9 @@ class Session:
         return BytesIO()
 
       return self.nameToImage[name].pngBytesIO
+
+    def get_clipboard_str(self):
+      return self.currImgSession.get_clipboard_str(self.selectedClipboardCols)
 
 class Utils:
 
