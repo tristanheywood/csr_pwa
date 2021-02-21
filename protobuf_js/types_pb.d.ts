@@ -82,6 +82,9 @@ export class ClipboardViewColumns extends jspb.Message {
   getNumpixels(): boolean;
   setNumpixels(value: boolean): void;
 
+  getDummy(): number;
+  setDummy(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ClipboardViewColumns.AsObject;
   static toObject(includeInstance: boolean, msg: ClipboardViewColumns): ClipboardViewColumns.AsObject;
@@ -100,6 +103,7 @@ export namespace ClipboardViewColumns {
     percrgb: boolean,
     sigmargb: boolean,
     numpixels: boolean,
+    dummy: number,
   }
 }
 
@@ -267,11 +271,6 @@ export class ActiveImage extends jspb.Message {
   getZoomratioviewimg(): number;
   setZoomratioviewimg(value: number): void;
 
-  hasClipboardviewcolumns(): boolean;
-  clearClipboardviewcolumns(): void;
-  getClipboardviewcolumns(): ClipboardViewColumns | undefined;
-  setClipboardviewcolumns(value?: ClipboardViewColumns): void;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ActiveImage.AsObject;
   static toObject(includeInstance: boolean, msg: ActiveImage): ActiveImage.AsObject;
@@ -289,7 +288,6 @@ export namespace ActiveImage {
     readblotchesList: Array<ReadBlotch.AsObject>,
     zoomratiosrcimg: number,
     zoomratioviewimg: number,
-    clipboardviewcolumns?: ClipboardViewColumns.AsObject,
   }
 }
 
@@ -312,6 +310,11 @@ export class UIState extends jspb.Message {
   getClipboardcontent(): ClipboardContent | undefined;
   setClipboardcontent(value?: ClipboardContent): void;
 
+  hasClipboardviewcolumns(): boolean;
+  clearClipboardviewcolumns(): void;
+  getClipboardviewcolumns(): ClipboardViewColumns | undefined;
+  setClipboardviewcolumns(value?: ClipboardViewColumns): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UIState.AsObject;
   static toObject(includeInstance: boolean, msg: UIState): UIState.AsObject;
@@ -328,6 +331,7 @@ export namespace UIState {
     selectedfolderimgidx: number,
     activeimage?: ActiveImage.AsObject,
     clipboardcontent?: ClipboardContent.AsObject,
+    clipboardviewcolumns?: ClipboardViewColumns.AsObject,
   }
 }
 

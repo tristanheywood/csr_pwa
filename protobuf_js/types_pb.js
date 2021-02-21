@@ -677,7 +677,8 @@ proto.ClipboardViewColumns.toObject = function(includeInstance, msg) {
     murgb: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
     percrgb: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
     sigmargb: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
-    numpixels: jspb.Message.getBooleanFieldWithDefault(msg, 6, false)
+    numpixels: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
+    dummy: jspb.Message.getFieldWithDefault(msg, 7, 0)
   };
 
   if (includeInstance) {
@@ -737,6 +738,10 @@ proto.ClipboardViewColumns.deserializeBinaryFromReader = function(msg, reader) {
     case 6:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setNumpixels(value);
+      break;
+    case 7:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setDummy(value);
       break;
     default:
       reader.skipField();
@@ -806,6 +811,13 @@ proto.ClipboardViewColumns.serializeBinaryToWriter = function(message, writer) {
   if (f) {
     writer.writeBool(
       6,
+      f
+    );
+  }
+  f = message.getDummy();
+  if (f !== 0) {
+    writer.writeInt32(
+      7,
       f
     );
   }
@@ -917,6 +929,24 @@ proto.ClipboardViewColumns.prototype.getNumpixels = function() {
  */
 proto.ClipboardViewColumns.prototype.setNumpixels = function(value) {
   return jspb.Message.setProto3BooleanField(this, 6, value);
+};
+
+
+/**
+ * optional int32 dummy = 7;
+ * @return {number}
+ */
+proto.ClipboardViewColumns.prototype.getDummy = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.ClipboardViewColumns} returns this
+ */
+proto.ClipboardViewColumns.prototype.setDummy = function(value) {
+  return jspb.Message.setProto3IntField(this, 7, value);
 };
 
 
@@ -2005,8 +2035,7 @@ proto.ActiveImage.toObject = function(includeInstance, msg) {
     readblotchesList: jspb.Message.toObjectList(msg.getReadblotchesList(),
     proto.ReadBlotch.toObject, includeInstance),
     zoomratiosrcimg: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    zoomratioviewimg: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    clipboardviewcolumns: (f = msg.getClipboardviewcolumns()) && proto.ClipboardViewColumns.toObject(includeInstance, f)
+    zoomratioviewimg: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -2063,11 +2092,6 @@ proto.ActiveImage.deserializeBinaryFromReader = function(msg, reader) {
     case 5:
       var value = /** @type {number} */ (reader.readInt32());
       msg.setZoomratioviewimg(value);
-      break;
-    case 6:
-      var value = new proto.ClipboardViewColumns;
-      reader.readMessage(value,proto.ClipboardViewColumns.deserializeBinaryFromReader);
-      msg.setClipboardviewcolumns(value);
       break;
     default:
       reader.skipField();
@@ -2132,14 +2156,6 @@ proto.ActiveImage.serializeBinaryToWriter = function(message, writer) {
     writer.writeInt32(
       5,
       f
-    );
-  }
-  f = message.getClipboardviewcolumns();
-  if (f != null) {
-    writer.writeMessage(
-      6,
-      f,
-      proto.ClipboardViewColumns.serializeBinaryToWriter
     );
   }
 };
@@ -2255,43 +2271,6 @@ proto.ActiveImage.prototype.setZoomratioviewimg = function(value) {
 };
 
 
-/**
- * optional ClipboardViewColumns clipboardViewColumns = 6;
- * @return {?proto.ClipboardViewColumns}
- */
-proto.ActiveImage.prototype.getClipboardviewcolumns = function() {
-  return /** @type{?proto.ClipboardViewColumns} */ (
-    jspb.Message.getWrapperField(this, proto.ClipboardViewColumns, 6));
-};
-
-
-/**
- * @param {?proto.ClipboardViewColumns|undefined} value
- * @return {!proto.ActiveImage} returns this
-*/
-proto.ActiveImage.prototype.setClipboardviewcolumns = function(value) {
-  return jspb.Message.setWrapperField(this, 6, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.ActiveImage} returns this
- */
-proto.ActiveImage.prototype.clearClipboardviewcolumns = function() {
-  return this.setClipboardviewcolumns(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.ActiveImage.prototype.hasClipboardviewcolumns = function() {
-  return jspb.Message.getField(this, 6) != null;
-};
-
-
 
 
 
@@ -2327,7 +2306,8 @@ proto.UIState.toObject = function(includeInstance, msg) {
     openfolder: (f = msg.getOpenfolder()) && proto.ScanFolder.toObject(includeInstance, f),
     selectedfolderimgidx: jspb.Message.getFieldWithDefault(msg, 2, 0),
     activeimage: (f = msg.getActiveimage()) && proto.ActiveImage.toObject(includeInstance, f),
-    clipboardcontent: (f = msg.getClipboardcontent()) && proto.ClipboardContent.toObject(includeInstance, f)
+    clipboardcontent: (f = msg.getClipboardcontent()) && proto.ClipboardContent.toObject(includeInstance, f),
+    clipboardviewcolumns: (f = msg.getClipboardviewcolumns()) && proto.ClipboardViewColumns.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2382,6 +2362,11 @@ proto.UIState.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.ClipboardContent;
       reader.readMessage(value,proto.ClipboardContent.deserializeBinaryFromReader);
       msg.setClipboardcontent(value);
+      break;
+    case 5:
+      var value = new proto.ClipboardViewColumns;
+      reader.readMessage(value,proto.ClipboardViewColumns.deserializeBinaryFromReader);
+      msg.setClipboardviewcolumns(value);
       break;
     default:
       reader.skipField();
@@ -2441,6 +2426,14 @@ proto.UIState.serializeBinaryToWriter = function(message, writer) {
       4,
       f,
       proto.ClipboardContent.serializeBinaryToWriter
+    );
+  }
+  f = message.getClipboardviewcolumns();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      proto.ClipboardViewColumns.serializeBinaryToWriter
     );
   }
 };
@@ -2572,6 +2565,43 @@ proto.UIState.prototype.clearClipboardcontent = function() {
  */
 proto.UIState.prototype.hasClipboardcontent = function() {
   return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional ClipboardViewColumns clipboardViewColumns = 5;
+ * @return {?proto.ClipboardViewColumns}
+ */
+proto.UIState.prototype.getClipboardviewcolumns = function() {
+  return /** @type{?proto.ClipboardViewColumns} */ (
+    jspb.Message.getWrapperField(this, proto.ClipboardViewColumns, 5));
+};
+
+
+/**
+ * @param {?proto.ClipboardViewColumns|undefined} value
+ * @return {!proto.UIState} returns this
+*/
+proto.UIState.prototype.setClipboardviewcolumns = function(value) {
+  return jspb.Message.setWrapperField(this, 5, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.UIState} returns this
+ */
+proto.UIState.prototype.clearClipboardviewcolumns = function() {
+  return this.setClipboardviewcolumns(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.UIState.prototype.hasClipboardviewcolumns = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 
