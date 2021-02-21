@@ -75,8 +75,9 @@ class ActiveImage(betterproto.Message):
     file_name: str = betterproto.string_field(1)
     img_data_v_f_n: str = betterproto.string_field(2)
     read_blotches: List["ReadBlotch"] = betterproto.message_field(3)
-    downsample_factor: int = betterproto.int32_field(4)
-    clipboard_view_columns: "ClipboardViewColumns" = betterproto.message_field(5)
+    zoom_ratio_src_img: int = betterproto.int32_field(4)
+    zoom_ratio_view_img: int = betterproto.int32_field(5)
+    clipboard_view_columns: "ClipboardViewColumns" = betterproto.message_field(6)
 
 
 @dataclass

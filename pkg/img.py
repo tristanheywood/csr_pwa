@@ -9,6 +9,7 @@ import os
 from io import BytesIO
 import uuid
 import PIL
+from flask.globals import session
 
 import numpy as np
 from skimage import data, io, filters, draw
@@ -27,6 +28,12 @@ class ImgLogger:
   log: Any
 
 class BaseImage(ABC):
+
+  session: 'Session'
+
+  # should be called at the end of the constructor by each inheriting class
+  def register_image(self):
+    BaseImage.session.register_image(self)
 
   @property
   def data(self) -> np.ndarray:
@@ -163,6 +170,8 @@ class FileImage(BaseImage):
         self._pngBytesIO = None
         self._data = None
 
+        self.register_image()
+
     @property
     def data(self):
       if self._data is None:
@@ -205,6 +214,8 @@ class ThumbnailImage(BaseImage):
     self._data = None
     self._pngBytesIO = None
 
+    self.register_image()
+
   @property
   def data(self) -> np.ndarray:
     if self._data is None:
@@ -228,26 +239,43 @@ class ThumbnailImage(BaseImage):
   def name(self) -> str:
     return 'thumbnail_' + self._srcImg.name
 
-class MiniFileImage(BaseImage):
+class ScaledFileImage(BaseImage):
 
   _srcImg: BaseImage
-  _downsampleFactor: int
+
+  # _zoomRatioViewImg pixels on the view image = _zoomRatioSrcImg pixels on the full image
+  _zoomRatioSrcImg: int
+  _zoomRatioViewImg: int
 
   _data: np.ndarray
   _pngBytesIO: BytesIO
 
-  def __init__(self, srcImg: BaseImage, downsampleFactor: int = 4):
+  def __init__(self, srcImg: BaseImage, zoomRatioSrcImg: int = 4, zoomRatioViewImg: int = 1):
     self._srcImg = srcImg
-    self._downsampleFactor = downsampleFactor
+    self._zoomRatioSrcImg = zoomRatioSrcImg
+    self._zoomRatioViewImg = zoomRatioViewImg
 
     self._data = None
     self._pngBytesIO = None
 
+    self.register_image()
+
   @property
   def data(self) -> np.ndarray:
     if self._data is None:
-      self._data = np.asarray(self._srcImg.data[::self._downsampleFactor, ::self._downsampleFactor], order='C')
-
+      if self._zoomRatioViewImg == 1:
+        self._data = np.asarray(
+          self._srcImg.data[
+            ::self._zoomRatioSrcImg,
+            ::self._zoomRatioSrcImg
+          ], order='C'
+        )
+      else: # self._zoomRatioSrcImg = 1 (zoomed in)
+        self._data = np.asarray(
+          self._srcImg.data
+            .repeat(self._zoomRatioViewImg, axis=0)
+            .repeat(self._zoomRatioViewImg, axis=1)
+        )
     return self._data
 
   @property
@@ -256,7 +284,7 @@ class MiniFileImage(BaseImage):
 
   @property
   def name(self) -> str:
-    return 'downsampled_' + self._srcImg.name.__str__()
+    return f'scaled_{self._zoomRatioViewImg}:{self._zoomRatioSrcImg}_' + self._srcImg.name.__str__()
 
 
 class DataImage(BaseImage):
@@ -273,6 +301,8 @@ class DataImage(BaseImage):
       name = uuid.uuid1().__str__() + '.png'
 
     self._name = name
+
+    self.register_image()
 
   @property
   def data(self) -> np.ndarray:
@@ -313,7 +343,7 @@ class ImageFolder:
         self.dir_path = dir_path
         # self.images = images
         self.thumbnails = [ThumbnailImage(img) for img in images]
-        self.images = [MiniFileImage(img) for img in images]
+        self.images = images
 
     @classmethod
     def from_gui_folder_selection(cls):
@@ -366,11 +396,11 @@ class ImageFolder:
     #     vfn = imgMan.ensure_image_stored(tn)
         # tn.virtualFileName = vfn
 
-    def register_images_on_session(self, session: 'Session'):
-      for img in self.images:
-        session.nameToImage[img.name] = img
-      for img in self.thumbnails:
-        session.nameToImage[img.name] = img
+    # def register_images_on_session(self, session: 'Session'):
+    #   for img in self.images:
+    #     session.nameToImage[img.name] = img
+    #   for img in self.thumbnails:
+    #     session.nameToImage[img.name] = img
 
     # def get_raw_thumbnails(self):
       # return [
@@ -465,9 +495,9 @@ class BlotchCircle:
         str(x) for x in [pc.mu_r ,pc.mu_g, pc.mu_b, pc.perc_r, pc.perc_g, pc.perc_b, pc.sigma_r, pc.sigma_g, pc.sigma_b]
       )
 
-    def register_imgs_on_session(self, session: 'Session'):
-      session.nameToImage[self.context.name] = self.context
-      session.nameToImage[self.compare.name] = self.compare
+    # def register_imgs_on_session(self, session: 'Session'):
+    #   session.nameToImage[self.context.name] = self.context
+    #   session.nameToImage[self.compare.name] = self.compare
 
     def get_ReadBlotch_msg(self) -> ReadBlotch:
       rb = ReadBlotch()
@@ -489,13 +519,15 @@ class BlotchCircle:
 
 class ImageSession:
 
-    image: BaseImage
+    image: FileImage
+    _viewImage: ScaledFileImage
 
     blotchCircles: List[BlotchCircle]
     nextBlotchId: int
 
-    def __init__(self, image: BaseImage) -> None:
+    def __init__(self, image: FileImage) -> None:
         self.image = image
+        self._viewImage = ScaledFileImage(self.image)
 
         self.blotchCircles = []
         self.nextBlotchId = 0
@@ -527,13 +559,20 @@ class ImageSession:
 
       return cc
 
+    def set_view_img_scale(self, viewRatio: int, srcRatio: int):
+
+      self._viewImage = ScaledFileImage(self.image, srcRatio, viewRatio)
+      return self._viewImage
+
     def get_ActiveImage_msg(self) -> ActiveImage:
 
       ai = ActiveImage()
       ai.file_name = self.image.name
-      ai.img_data_v_f_n = self.image.name
+      ai.img_data_v_f_n = self._viewImage.name
       ai.read_blotches = [b.get_ReadBlotch_msg() for b in self.blotchCircles]
-      ai.downsample_factor = 1 if type(self.image) is not MiniFileImage else self.image._downsampleFactor
+      # ai.downsample_factor = 1 if type(self.image) is not ScaledFileImage else self.image._downsampleFactor
+      ai.zoom_ratio_view_img = self._viewImage._zoomRatioViewImg
+      ai.zoom_ratio_src_img = self._viewImage._zoomRatioSrcImg
 
       return ai
 
@@ -576,6 +615,8 @@ class Session:
     currSelectedImgIdx: int
 
     def __init__(self) -> None:
+        BaseImage.session = self
+
         self.imgFolder = None
         self.currImgSession = None
         self.currSelectedImgIdx = 0
@@ -588,6 +629,9 @@ class Session:
     def set_currImgSession(self, imgSess: ImageSession):
       self.currImgSession = imgSess
 
+    def register_image(self, img: BaseImage):
+      self.nameToImage[img.name] = img
+
     def get_UIState_msg(self) -> UIState:
       uiState = UIState()
       uiState.open_folder = self.imgFolder.get_ScanFolder_msg()
@@ -598,6 +642,9 @@ class Session:
       ImgLogger.log('Created UIState:', str(uiState))
 
       return uiState
+
+    def set_img_zoom(self, viewRatio, srcRatio):
+      self.currImgSession.set_view_img_scale(viewRatio, srcRatio)
 
     def get_image_by_name(self, name: str) -> BaseImage:
       if name not in self.nameToImage:

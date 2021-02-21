@@ -145,7 +145,7 @@ def do_open_folder():
 
     global session
     session.set_imgFolder(ImageFolder.from_gui_folder_selection())
-    session.imgFolder.register_images_on_session(session)
+    # session.imgFolder.register_images_on_session(session)
     session.set_currImgSession(ImageSession(session.imgFolder.images[0]))
 
     uiState = session.get_UIState_msg()
@@ -220,7 +220,7 @@ def do_new_circle():
     # compare64 = base64.b64encode(comparePNG).decode('ascii')
 
     imgSess.add_circle(cr, cc, r)
-    imgSess.blotchCircles[-1].register_imgs_on_session(session)
+    # imgSess.blotchCircles[-1].register_imgs_on_session(session)
 
     # global colours
     # colours.append([int(x) for x in colour])
@@ -274,6 +274,19 @@ def remove_blotch(blotchId):
   pyperclip.copy(session.currImgSession.get_clipboard_str())
 
   return session.get_UIState_msg().SerializeToString()
+
+@app.route('/set_zoom/<viewRatio>/<srcRatio>')
+def set_zoom(viewRatio: str, srcRatio: str):
+  viewRatio = int(viewRatio)
+  srcRatio = int(srcRatio)
+
+  log(f'Client requested zoom of {viewRatio}:{srcRatio} (viewRatio:srcRatio)')
+
+  global session
+  session.set_img_zoom(viewRatio, srcRatio)
+
+  return session.get_UIState_msg().SerializeToString()
+
 
 
 # thread = threading.Thread(target = run_node_websocket, daemon=True)
