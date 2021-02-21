@@ -30,6 +30,7 @@ class ClipboardViewColumns(betterproto.Message):
     perc_r_g_b: bool = betterproto.bool_field(4)
     sigma_r_g_b: bool = betterproto.bool_field(5)
     num_pixels: bool = betterproto.bool_field(6)
+    dummy: int = betterproto.int32_field(7)
 
 
 @dataclass
@@ -77,7 +78,6 @@ class ActiveImage(betterproto.Message):
     read_blotches: List["ReadBlotch"] = betterproto.message_field(3)
     zoom_ratio_src_img: int = betterproto.int32_field(4)
     zoom_ratio_view_img: int = betterproto.int32_field(5)
-    clipboard_view_columns: "ClipboardViewColumns" = betterproto.message_field(6)
 
 
 @dataclass
@@ -86,3 +86,4 @@ class UIState(betterproto.Message):
     selected_folder_img_idx: int = betterproto.int32_field(2)
     active_image: "ActiveImage" = betterproto.message_field(3)
     clipboard_content: "ClipboardContent" = betterproto.message_field(4)
+    clipboard_view_columns: "ClipboardViewColumns" = betterproto.message_field(5)

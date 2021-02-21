@@ -178,6 +178,21 @@ def do_get_selected_scan():
 
     # return {'imgData': session.currImgSession.image.to_b64_png()}
 
+@app.route('/set_clipboard_cols', methods=['POST'])
+def set_clipboard_cols():
+
+  body = request.get_data()
+  log('clipboard cols body', body)
+
+  cvc = ClipboardViewColumns.FromString(body)
+
+  log('/set_clipboard_cols', cvc.to_dict())
+
+  global session
+  session.selectedClipboardCols = cvc
+
+  return session.get_UIState_msg().SerializeToString()
+
 @app.route('/new_circle', methods=['POST'])
 def do_new_circle():
 

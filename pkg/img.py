@@ -613,6 +613,7 @@ class Session:
     # imgDataManager: ImageDataManager
     nameToImage: Dict[str, BaseImage]
     currSelectedImgIdx: int
+    selectedClipboardCols: ClipboardViewColumns
 
     def __init__(self) -> None:
         BaseImage.session = self
@@ -621,6 +622,7 @@ class Session:
         self.currImgSession = None
         self.currSelectedImgIdx = 0
         self.nameToImage = {}
+        self.selectedClipboardCols = Utils.make_clipboard_view_cols()
 
     def set_imgFolder(self, imgFolder: ImageFolder):
         self.imgFolder = imgFolder
@@ -638,8 +640,9 @@ class Session:
       uiState.selected_folder_img_idx = self.currSelectedImgIdx
       uiState.active_image = self.currImgSession.get_ActiveImage_msg()
       uiState.clipboard_content = self.currImgSession.get_clipboard_content_msg()
+      uiState.clipboard_view_columns = self.selectedClipboardCols
 
-      ImgLogger.log('Created UIState:', str(uiState))
+      # ImgLogger.log('Created UIState:', str(uiState))
 
       return uiState
 
@@ -659,4 +662,17 @@ class Session:
 
       return self.nameToImage[name].pngBytesIO
 
+class Utils:
 
+  @classmethod
+  def make_clipboard_view_cols(cls) -> ClipboardViewColumns:
+    cv = ClipboardViewColumns()
+    cv.name = True
+    cv.mu_r_g_b = True
+    cv.perc_r_g_b = True
+    cv.sigma_r_g_b = True
+    cv.num_pixels = True
+    # cv.colour = True
+    cv.dummy = 3
+
+    return cv
