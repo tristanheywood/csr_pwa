@@ -21,6 +21,7 @@ message ClipboardViewColumns {
   bool percRGB = 4;
   bool sigmaRGB = 5;
   bool numPixels = 6;
+  int32 dummy = 7;
 }
 
 message ClipboardContent {
@@ -60,7 +61,6 @@ message ActiveImage {
   repeated ReadBlotch readBlotches = 3;
   int32 zoomRatioSrcImg = 4;
   int32 zoomRatioViewImg = 5;
-  ClipboardViewColumns clipboardViewColumns = 6;
 }
 
 message UIState {
@@ -68,6 +68,7 @@ message UIState {
   int32 selectedFolderImgIdx = 2;
   ActiveImage activeImage = 3;
   ClipboardContent clipboardContent = 4;
+  ClipboardViewColumns clipboardViewColumns = 5;
 }
 
 
