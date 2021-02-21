@@ -238,6 +238,7 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
         }}>
           <ClipboardView
             content={this.props.uiState.getClipboardcontent() || new ClipboardContent()}
+            cbCols={this.props.uiState.getClipboardviewcolumns() || new ClipboardViewColumns()}
             baseURL = {this.props.baseURL}
             request = {this.props.request}
           />
@@ -390,6 +391,7 @@ class Drop extends React.Component<DropProps, DropState> {
 
 type ClipboardViewProps = {
   content: ClipboardContent;
+  cbCols: ClipboardViewColumns;
   baseURL: string;
   request: (url: string) => void;
 }
@@ -402,15 +404,6 @@ class ClipboardView extends React.Component<ClipboardViewProps, {}> {
   };
 
   render() {
-    // console.log(this.props.content.getRowsList().map(row => {
-    //   <tr>
-    //     {row.split("\t").map(elt => {
-    //       <td>
-    //         {elt}
-    //       </td>
-    //     })}
-    //   </tr>
-    // }));
     return (
       <table style = {{
         boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
@@ -424,7 +417,7 @@ class ClipboardView extends React.Component<ClipboardViewProps, {}> {
           borderRadius: 5,
         }}>
           <tr style = {this.trStyle}>
-            {["🎨", "μR", "μG", "μB","%R", "%G", "%B", "σR", "σG", "σB", "px", "➖"].map((header, idx) => {
+            {/* {["🎨", "μR", "μG", "μB","%R", "%G", "%B", "σR", "σG", "σB", "px", "➖"].map((header, idx) => {
               console.log(idx, idx % 3 == 1);
               return (
               <th style = {{
@@ -433,7 +426,28 @@ class ClipboardView extends React.Component<ClipboardViewProps, {}> {
                 borderRight: idx % 3 == 0 ? "1px solid rgba(0, 0, 0, 0.2)" : undefined
               }}>{header}</th>
               );
-            })}
+            })} */}
+            {[
+              this._render_th("🎨", true)
+            ].concat(this.props.cbCols.getName() ? [
+              this._render_th("ID", true)
+            ] : []).concat(this.props.cbCols.getMurgb() ? [
+              this._render_th("μR", false),
+              this._render_th("μG", false),
+              this._render_th("μB", true),
+            ] : []).concat(this.props.cbCols.getPercrgb() ? [
+              this._render_th("%R", false),
+              this._render_th("%G", false),
+              this._render_th("%B", true),
+            ] : []).concat(this.props.cbCols.getSigmargb() ? [
+              this._render_th("σR", false),
+              this._render_th("σG", false),
+              this._render_th("σB", true),
+            ] : []).concat(this.props.cbCols.getNumpixels() ? [
+              this._render_th("px", true),
+            ] : []).concat([
+              this._render_th("➖", false)
+            ])}
           </tr>
         </thead>
         <tbody>
@@ -504,6 +518,23 @@ class ClipboardView extends React.Component<ClipboardViewProps, {}> {
       </table>
     )
   }
+
+  _render_th(name: string, border: boolean) {
+    return (
+      <th
+        style = {{
+          textAlign: "center",
+          width: 40,
+          borderRight: border ? "1px solid rgba(0, 0, 0, 0.2)" : undefined,
+        }}
+      >{name}</th>
+    )
+  }
+
+  _render_mu() {
+
+  }
+
 }
 
 type ScanViewerProps = {
