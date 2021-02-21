@@ -58,8 +58,9 @@ message ActiveImage {
   string fileName = 1;
   string imgDataVFN = 2;
   repeated ReadBlotch readBlotches = 3;
-  int32 downsampleFactor = 4;
-  ClipboardViewColumns clipboardViewColumns = 5;
+  int32 zoomRatioSrcImg = 4;
+  int32 zoomRatioViewImg = 5;
+  ClipboardViewColumns clipboardViewColumns = 6;
 }
 
 message UIState {
