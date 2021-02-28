@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+message PickStats {
+  double muR = 1;
+  double muG = 2;
+  double muB = 3;
+  double percR = 4;
+  double percG = 5;
+  double percB = 6;
+  double sigmaR = 7;
+  double sigmaG = 8;
+  double sigmaB = 9;
+  int32 numPixels = 10;
+  string pickName = 11;
+}
+
+message ClipboardViewColumns {
+  bool name = 1;
+  bool colour = 2;
+  bool muRGB = 3;
+  bool percRGB = 4;
+  bool sigmaRGB = 5;
+  bool numPixels = 6;
+  int32 dummy = 7;
+}
+
+message ClipboardContent {
+  repeated PickStats rows = 1;
+  repeated int32 blotchIDs = 2;
+}
+
+message PickedCircle {
+  double centerRow = 1;
+  double centerCol = 2;
+  double radius = 3;
+  string imgFileName = 4;
+}
+
+// an image in the currently selected folder
+message FolderImage {
+  string fileName = 1;
+  string thumbnailImgVFN = 2;
+}
+
+// the currently selected folder
+message ScanFolder {
+  repeated FolderImage folderImages = 1;
+}
+
+message ReadBlotch {
+  PickedCircle circle = 1;
+  PickStats stats = 2;
+  string contextVFN = 3;
+  string compareVFN = 4;
+  int32 blotchID = 5;
+}
+
+message ActiveImage {
+  string fileName = 1;
+  string imgDataVFN = 2;
+  repeated ReadBlotch readBlotches = 3;
+  int32 zoomRatioSrcImg = 4;
+  int32 zoomRatioViewImg = 5;
+}
+
+message UIState {
+  ScanFolder openFolder = 1;
+  int32 selectedFolderImgIdx = 2;
+  ActiveImage activeImage = 3;
+  ClipboardContent clipboardContent = 4;
+  ClipboardViewColumns clipboardViewColumns = 5;
+}
+
+
