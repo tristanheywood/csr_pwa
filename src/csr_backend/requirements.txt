@@ -1,0 +1,9 @@
+pyperclip
+numpy==1.16.5
+scipy==1.5.4
+scikit-image==0.17.1
+pillow
+pyinstaller
+websockets
+Flask
+betterproto[compiler]
