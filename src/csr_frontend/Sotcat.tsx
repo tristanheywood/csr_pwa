@@ -1,11 +1,16 @@
+import { NONAME } from 'dns';
 import React from 'react';
 import { PickedCircle, ClipboardContent, PickStats, UIState, FolderImage, ActiveImage, ReadBlotch, ClipboardViewColumns } from './protobuf_js/types_pb'
 
 let BOX_SHADOW_STR: string = "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)";
 
-class SotcatContainer extends React.Component<{}, {uiState: UIState}> {
+type PlatformProps = {
+  imagesInputButton: JSX.Element,
+}
 
-  constructor(props: {}) {
+class SotcatContainer extends React.Component<{platformProps: PlatformProps}, {uiState: UIState}> {
+
+  constructor(props: {platformProps: PlatformProps}) {
     super(props)
     this.state = {
       uiState: new UIState()
@@ -14,11 +19,17 @@ class SotcatContainer extends React.Component<{}, {uiState: UIState}> {
 
   render() {
     return (
-      <Sotcat
-        uiState = {this.state.uiState}
-        request = {this.do_request.bind(this)}
-        baseURL = {'http://localhost:8000'}
-      />
+      <div style = {{
+        backgroundColor: "dimgray",
+        fontFamily: "Noto Sans JP, sans-serif",
+      }}>
+        <Sotcat
+          uiState = {this.state.uiState}
+          request = {this.do_request.bind(this)}
+          baseURL = {'http://localhost:8000'}
+          platformProps = {this.props.platformProps}
+        />
+      </div>
     )
   }
 
@@ -51,6 +62,7 @@ type SotcatProps = {
   uiState: UIState,
   request: (url: string, body?: any) => void,
   baseURL: string,
+  platformProps: PlatformProps,
 }
 
 type SotcatState = {
@@ -131,6 +143,7 @@ class Sotcat extends React.Component<SotcatProps, SotcatState> {
           uiState = {this.props.uiState}
           request = {this.props.request}
           baseURL = {this.props.baseURL}
+          imagesInputButton = {this.props.platformProps.imagesInputButton}
         />
         <div style = {{
           boxShadow: BOX_SHADOW_STR,
@@ -570,12 +583,22 @@ type ScanViewerProps = {
   uiState: UIState;
   request: (url: string) => void;
   baseURL: string;
+  imagesInputButton: JSX.Element;
 }
 
 class ScanViewer extends React.Component<ScanViewerProps, {}> {
 
   selectedTNRef: React.RefObject<HTMLImageElement>;
   scansDivRef: React.RefObject<HTMLDivElement>;
+
+  BUTTON_STYLE = {
+    backgroundColor: "whitesmoke",
+    borderRadius: "10px",
+    border: "none",
+    fontSize: "1.3rem",
+    boxShadow: "0px 8px 28px -6px rgba(24, 39, 75, 0.12), 0px 18px 88px -4px rgba(24, 39, 75, 0.14)",
+    transition: "transform ease-in 0.1s",
+  }
 
   constructor(props: ScanViewerProps) {
     super(props)
@@ -596,25 +619,26 @@ class ScanViewer extends React.Component<ScanViewerProps, {}> {
         borderRadius: 5,
       }}>
         <div>
-          <button
-            style={{
+          {/* <button
+            style={Object.assign(this.BUTTON_STYLE, {
               height: "90%",
               width: 70,
               fontSize: 12,
               margin: 3,
-            }}
+            })}
             onClick={() => {
               this.props.request(this.props.baseURL + '/open_folder');
             }}
-          >Open Folder</button>
+          >Open Folder</button> */}
+          {this.props.imagesInputButton}
         </div>
         <div>
           <button
-            style={{
+            style={Object.assign(this.BUTTON_STYLE, {
               height: "90%",
               width: 50,
               margin: 3,
-            }}
+            })}
             onClick={() => {
               this._on_selection(this.props.uiState.getSelectedfolderimgidx() - 1);
             }}
@@ -622,11 +646,11 @@ class ScanViewer extends React.Component<ScanViewerProps, {}> {
         </div>
         <div>
           <button
-            style={{
+            style={Object.assign(this.BUTTON_STYLE, {
               width: 50,
               height: "90%",
               margin: 3,
-            }}
+            })}
             onClick={() => {
               this._on_selection(this.props.uiState.getSelectedfolderimgidx() + 1);
             }}
